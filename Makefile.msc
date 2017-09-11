@@ -1,0 +1,5 @@
+all:
+	( cd src && nmake -f Makefile.msc MSTDLIB_DIR="$(MSTDLIB_DIR)" )
+
+clean:
+	( cd src && nmake -f Makefile.msc MSTDLIB_DIR="$(MSTDLIB_DIR)" clean )

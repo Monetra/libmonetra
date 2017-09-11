@@ -1,0 +1,71 @@
+.SUFFIXES: .c .cpp .obj
+
+# variables
+CC = cl
+AS = ml
+LD = link
+AR = lib
+RC = rc
+
+TARGET    = libmonetra.dll
+
+!IFNDEF MSTDLIB_DIR
+!  ERROR Please set MSTDLIB_DIR appropriately.
+!ENDIF
+
+!IF ! EXIST("$(MSTDLIB_DIR)/include/mstdlib/mstdlib.h")
+!  ERROR $(MSTDLIB_DIR)/include/mstdlib/mstdlib.h not found
+!ENDIF
+
+# See if this is a source directory, if so, set lib paths
+!IF EXIST("$(MSTDLIB_DIR)/base")
+LDPATH    = /LIBPATH:"$(MSTDLIB_DIR)/base" /LIBPATH:"$(MSTDLIB_DIR)/thread" /LIBPATH:"$(MSTDLIB_DIR)/io" /LIBPATH:"$(MSTDLIB_DIR)/tls" /LIBPATH:"$(MSTDLIB_DIR)/formats"
+!ELSE
+LDPATH    = /LIBPATH:"$(MSTDLIB_DIR)/lib"
+!ENDIF
+
+INCLUDES  = -I"$(MSTDLIB_DIR)/include" -I"../include" -I"../"
+DEFINES   = /D_CRT_SECURE_NO_DEPRECATE /DLIBMONETRA_INTERNAL /DHAVE_CONFIG_H /DWIN32_LEAN_AND_MEAN
+
+# DEBUG=1
+
+!IF "$(DEBUG)" == "1"
+OPT_CFLAGS  = -Od -Zi
+OPT_LDFLAGS = /DEBUG
+!ELSE
+OPT_CFLAGS  = -Os
+OPT_LDFLAGS = /RELEASE
+!ENDIF
+
+CFLAGS    = -nologo /TC -MD $(OPT_CFLAGS) -GF $(INCLUDES) $(DEFINES)
+CPPFLAGS  = -nologo /TP -MD $(OPT_CFLAGS) -GF $(INCLUDES) $(DEFINES)
+ASFLAGS   = -coff
+LDFLAGS   = -nologo $(OPT_LDFLAGS) /MANIFEST /SUBSYSTEM:WINDOWS $(LDPATH)
+ARFLAGS   = -nologo
+RCFLAGS   = /dWIN32 /r
+
+OBJS      = \
+	monetra_conn.obj           \
+	monetra_conn_event.obj     \
+	monetra_deprecated.obj     \
+	monetra_init.obj           \
+	monetra_legacy.obj         \
+	monetra_parse.obj          \
+	monetra_trans.obj          \
+	monetra_trans_structure.obj
+
+all: $(TARGET)
+
+.c.obj:
+	$(CC) -c $(CFLAGS) -Fo$*.obj $<
+
+$(TARGET): $(OBJS)
+	$(LD) /DLL $(LDFLAGS) /MANIFESTFILE:"$(TARGET).intermediate.manifest" -out:$@ $(OBJS) mstdlib_formats.lib mstdlib_tls.lib mstdlib_io.lib mstdlib_thread.lib mstdlib.lib
+	mt.exe -nologo -manifest "$(TARGET).intermediate.manifest" -outputresource:$(TARGET);2
+
+
+# cleanup
+clean:
+	-del $(OBJS) *.exp *.lib
+	-del $(TARGET)
+	-del $(TARGET).intermediate.manifest
