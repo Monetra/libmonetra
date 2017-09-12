@@ -1,5 +1,11 @@
-AC_INIT([libmonetra],[8.0.0],[support@monetra.com])
+m4_define([libmonetra_major_version],   [8])
+m4_define([libmonetra_minor_version],   [0])
+m4_define([libmonetra_release_version], [0])
+m4_define([libmonetra_version], [libmonetra_major_version.libmonetra_minor_version.libmonetra_release_version])
+
+AC_INIT([libmonetra],[libmonetra_version],[support@monetra.com])
 AC_PREREQ(2.60)
+
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/monetra_conn.c])
 dnl AC_CONFIG_HEADERS([src/config.h])
@@ -10,9 +16,17 @@ AC_PROG_CC
 AC_PROG_CC_STDC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
+
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT([aix-soname=svr4])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile test/Makefile Doxyfile])
+
+dnl Setting this prevents showing the full compile/link command line.
+dnl Use --disable-silent-rules  or  make V=1  to re-enable verbosity.
+AM_SILENT_RULES([yes])
+AC_C_CONST
+AC_HEADER_STDC
+AC_SYS_LARGEFILE
 
 m4_include([m4/ax_append_flag.m4])
 m4_include([m4/ax_check_compile_flag.m4])
@@ -25,40 +39,33 @@ DX_DOXYGEN_FEATURE(ON)
 DX_DOT_FEATURE(ON)
 DX_HTML_FEATURE(ON)
 
+
+dnl
 dnl tests
-PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES(CHECK, [check >= 0.9.4],,[AC_MSG_RESULT([no, testing is disabled])])
-AM_CONDITIONAL(HAVE_CHECK, [test "x$CHECK_LIBS" != "x"])
-AC_SUBST(CHECK_CFLAGS)
-AC_SUBST(CHECK_LIBS)
+dnl
+AC_ARG_ENABLE(tests,
+	AC_HELP_STRING([--disable-tests], [Disable building of tests]),
+	[ build_tests=${enableval} ],
+	[ build_tests=maybe ])
 
-dnl VERSIONING
-dnl  On new release, edit m_version.h
-dnl   LIBMONETRA_MICRO_VERSION += 1;
-dnl   LIBMONETRA_INTERFACE_VERSION += 1;
-dnl   LIBMONETRA_BINARY_AGE += 1;
-dnl  if new functions were added
-dnl   LIBMONETRA_INTERFACE_AGE=0
-dnl  if backward compat is broken
-dnl   LIBMONETRA_BINARY_AGE=0
-dnl   LIBMONETRA_INTERFACE_AGE=0
-LIBMONETRA_MAJOR_VERSION=8
-LIBMONETRA_MINOR_VERSION=0
-LIBMONETRA_MICRO_VERSION=0
-LIBMONETRA_INTERFACE_AGE=0
-LIBMONETRA_BINARY_AGE=0
-LIBMONETRA_VERSION=$LIBMONETRA_MAJOR_VERSION:$LIBMONETRA_MINOR_VERSION:$LIBMONETRA_MICRO_VERSION
+AX_FIND_PACKAGE(check,
+		[/usr/local/check /usr/local],
+		[check.h],
+		[srunner_create],
+		[check])
 
-AC_SUBST(LIBMONETRA_MAJOR_VERSION)
-AC_SUBST(LIBMONETRA_MINOR_VERSION)
-AC_SUBST(LIBMONETRA_MICRO_VERSION)
-AC_SUBST(LIBMONETRA_INTERFACE_AGE)
-AC_SUBST(LIBMONETRA_BINARY_AGE)
-AC_SUBST(LIBMONETRA_VERSION)
+if test "$CHECK_FOUND" = "yes" -a "$build_tests" != "no" ; then
+	build_tests=yes
+else
+	if test "$build_tests" = "yes" ; then
+		AC_MSG_ERROR([tests enabled but libcheck not found])
+	fi
+	build_tests=no
+fi
 
-AC_C_CONST
-AC_HEADER_STDC
-AC_SYS_LARGEFILE
+AC_MSG_CHECKING([if tests are enabled])
+AC_MSG_RESULT($build_tests)
+
 
 dnl ----- Check for Position Independent Executable flags -----
 AC_MSG_CHECKING([whether $CC accepts PIE flags])
@@ -160,25 +167,50 @@ AC_ARG_ENABLE(valgrind-testing,
 )
 
 dnl ----------- MSTDLIB -------------
-dnl   Need to add search path criteria before running these checks, along with --with-mstdlib flags
-AC_CHECK_HEADER([mstdlib/mstdlib.h], [ ], [ AC_MSG_ERROR([unable to find mstdlib/mstdlib.h]) ], [ ])
-AC_CHECK_HEADER([mstdlib/mstdlib_thread.h], [ ], [ AC_MSG_ERROR([unable to find mstdlib/mstdlib_thread.h]) ], [ ])
-AC_CHECK_HEADER([mstdlib/mstdlib_io.h], [ ], [ AC_MSG_ERROR([unable to find mstdlib/mstdlib_io.h]) ], [ ])
-AC_CHECK_HEADER([mstdlib/mstdlib_tls.h], [ ], [ AC_MSG_ERROR([unable to find mstdlib/mstdlib_tls.h]) ], [ ])
-
-AC_ARG_ENABLE(internal-build, [ Disables checks for precompiled dependencies like mstdlib ], [ INTERNAL_BUILD=yes ], [ INTERNAL_BUILD=no ])
-
-if test "${INTERNAL_BUILD}" = "no" ; then
-	AC_SEARCH_LIBS([M_buf_create], [mstdlib], [ ], [ AC_MSG_ERROR([unable to find mstdlib]) ], [ ])
-	AC_SEARCH_LIBS([M_thread_create], [mstdlib_thread], [ ], [ AC_MSG_ERROR([unable to find mstdlib_thread]) ], [ -lmstdlib ])
-	AC_SEARCH_LIBS([M_event_create], [mstdlib_io], [ ], [ AC_MSG_ERROR([unable to find mstdlib_io]) ], [ -lmstdlib -lmstdlib_thread ])
-	AC_SEARCH_LIBS([M_tls_clientctx_create], [mstdlib_tls], [ ], [ AC_MSG_ERROR([unable to find mstdlib_tls]) ], [ -lmstdlib -lmstdlib_thread -lmstdlib_io ])
+dnl chain build if thirdparty/mstdlib exists, otherwise search for it
+if test -d "${srcdir}/thirdparty/mstdlib" ; then
+	ac_configure_args="${ac_configure_args} --disable-tests"
+	AC_CONFIG_SUBDIRS([thirdparty/mstdlib])
+	BUILD_SUBDIRS="${BUILD_SUBDIRS} thirdparty/mstdlib"
+	MSTDLIB_CPPFLAGS='-I$(top_srcdir)/thirdparty/mstdlib/include -I$(top_builddir)/thirdparty/mstdlib/include'
+	MSTDLIB_LIBADD='$(top_builddir)/thirdparty/mstdlib/tls/.libs/libmstdlib_tls.la $(top_builddir)/thirdparty/mstdlib/io/.libs/libmstdlib_io.la $(top_builddir)/thirdparty/mstdlib/thread/.libs/libmstdlib_thread.la $(top_builddir)/thirdparty/mstdlib/formats/.libs/libmstdlib_formats.la $(top_builddir)/thirdparty/mstdlib/base/.libs/libmstdlib.la   '
+	MSTDLIB_LDFLAGS=""
+	AC_SUBST(MSTDLIB_CPPFLAGS)
+	AC_SUBST(MSTDLIB_LIBADD)
+	AC_SUBST(MSTDLIB_LDFLAGS)
+	LIBMONETRA_BUILD_SUBDIRS="thirdparty/mstdlib"
 else
-	dnl Expects -I and -L flags to have been set appropriately by chain building
-	LIBS="${LIBS} -lmstdlib -lmstdlib_thread -lmstdlib_io -lmstdlib_tls"
+	AX_FIND_PACKAGE(mstdlib,
+		[/usr/local/mstdlib /usr/local],
+		[mstdlib/mstdlib.h],
+		[M_buf_create],
+		[mstdlib])
+
+	if test "${MSTDLIB_FOUND}" != "yes" ; then
+		AC_MSG_ERROR(unable to locate mstdlib)
+	fi
+
+	MSTDLIB_LIBADD="-lmstdlib_tls -lmstdlib_io -lmstdlib_thread -lmstdlib_formats ${MSTDLIB_LIBADD}"
+	AC_SUBST(MSTDLIB_LIBADD)
 fi
 
+LIBMONETRA_BUILD_SUBDIRS="${LIBMONETRA_BUILD_SUBDIRS} include src"
+if test "$build_tests" = "yes" ; then
+	LIBMONETRA_BUILD_SUBDIRS="${LIBMONETRA_BUILD_SUBDIRS} test"
+fi
+
+AC_SUBST(LIBMONETRA_BUILD_SUBDIRS)
+
 AC_DEFINE([LIBMONETRA_INTERNAL], 1, [Let config know we are internal])
+
+dnl Libtool versioning is weird, they use a 'current', 'age', and 'revision'
+dnl methodology to determine the ABI version.  We actually are guaranteeing
+dnl it based on our versions.  Major means ABI breaks, minor means addition
+dnl of new functions, and release means bugfixes.  We need to map our version
+dnl to the libtool version.  The forward method for .so versioning is
+dnl (current-age).age.revision, so we'll do the opposite here:
+LIBMONETRA_LIBTOOL_VERSION="`expr libmonetra_major_version + libmonetra_minor_version`:`echo libmonetra_release_version`:`echo libmonetra_minor_version`"
+AC_SUBST(LIBMONETRA_LIBTOOL_VERSION)
 
 AC_OUTPUT
 

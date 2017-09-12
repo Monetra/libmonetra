@@ -1,10 +1,8 @@
-if HAVE_CHECK
-
-AM_CFLAGS   = @CHECK_CFLAGS@ -I$(top_srcdir)/include
+AM_CFLAGS   = @CHECK_CPPFLAGS@ @MSTDLIB_CPPFLAGS@ -I$(top_srcdir)/include
 AM_CPPFLAGS = $(AM_CFLAGS)
-AM_LDFLAGS  = @CHECK_LIBS@
+AM_LDFLAGS  = @CHECK_LDFLAGS@ @MSTDLIB_LDFLAGS@
 AM_CFLAGS  += -DTEST
-LDADD       = $(top_builddir)/src/libmonetra.la
+LDADD       = $(top_builddir)/src/libmonetra.la @CHECK_LIBADD@ @MSTDLIB_LIBADD@
 
 ######################################################################
 
@@ -22,4 +20,3 @@ all = check
 
 check_PROGRAMS = $(TESTS)
 
-endif
