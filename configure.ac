@@ -192,8 +192,11 @@ else
 		[M_buf_create],
 		[mstdlib])
 
-	if test "${MSTDLIB_FOUND}" != "yes" -a "${INTERNAL_BUILD}" = "no" ; then
-		AC_MSG_ERROR(unable to locate mstdlib)
+	if test "${MSTDLIB_FOUND}" != "yes" ; then
+		if test "${INTERNAL_BUILD}" = "no" ; then
+			AC_MSG_ERROR(unable to locate mstdlib)
+		fi
+		MSTDLIB_LIBADD="-lmstdlib"
 	fi
 
 	MSTDLIB_LIBADD="-lmstdlib_tls -lmstdlib_io -lmstdlib_thread -lmstdlib_formats ${MSTDLIB_LIBADD}"
