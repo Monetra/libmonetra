@@ -167,6 +167,12 @@ AC_ARG_ENABLE(valgrind-testing,
 )
 
 dnl ----------- MSTDLIB -------------
+AC_ARG_ENABLE(internal-build, 
+	AC_HELP_STRING([--enable-internal-build],
+		[ Disables checks for precompiled dependencies like mstdlib.  Instead it assumes the include paths and library paths have already been set up appropriately ]),
+	[ INTERNAL_BUILD=yes ],
+	[ INTERNAL_BUILD=no ])
+
 dnl chain build if thirdparty/mstdlib exists, otherwise search for it
 if test -d "${srcdir}/thirdparty/mstdlib" ; then
 	ac_configure_args="${ac_configure_args} --disable-tests"
@@ -186,7 +192,7 @@ else
 		[M_buf_create],
 		[mstdlib])
 
-	if test "${MSTDLIB_FOUND}" != "yes" ; then
+	if test "${MSTDLIB_FOUND}" != "yes" -a "${INTERNAL_BUILD}" = "no" ; then
 		AC_MSG_ERROR(unable to locate mstdlib)
 	fi
 
