@@ -94,10 +94,10 @@ install:
 # Put in 3rd party sources and chain build
 before_script:
     - git clone https://github.com/Monetra/mstdlib.git thirdparty/mstdlib --depth 1
-    - git clone https://github.com/c-ares/c-ares.git thirdparty/mstdlib/thirdparty/c-ares --depth 1
-    - wget http://sqlite.org/2017/sqlite-amalgamation-3200100.zip
-    - unzip sqlite-amalgamation-3200100.zip
-    - mv sqlite-amalgamation-3200100 thirdparty/mstdlib/thirdparty/sqlite-amalgamation
+#    - git clone https://github.com/c-ares/c-ares.git thirdparty/mstdlib/thirdparty/c-ares --depth 1
+#    - wget http://sqlite.org/2017/sqlite-amalgamation-3200100.zip
+#    - unzip sqlite-amalgamation-3200100.zip
+#    - mv sqlite-amalgamation-3200100 thirdparty/mstdlib/thirdparty/sqlite-amalgamation
 
 script:
     - if [ "$BUILD_TYPE" = "cmake" ]     ; then cmake -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT_DIR" -H. -B_builds ; fi
