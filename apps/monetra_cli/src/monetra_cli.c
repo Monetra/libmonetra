@@ -118,7 +118,7 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 			break;
 		case LM_EVENT_TRANS_DONE:
 			kvs = M_hash_dict_create(8, 75, M_HASH_DICT_CASECMP|M_HASH_DICT_KEYS_ORDERED|M_HASH_DICT_KEYS_SORTASC);
-			if (LM_trans_response_type(trans) == LM_TRANS_RESPONSE_CSV) {
+			if (LM_trans_response_type(trans) == LM_TRANS_RESPONSE_CSV || LM_trans_response_type(trans) == LM_TRANS_RESPONSE_BULK) {
 				M_hash_dict_insert(kvs, "datablock", LM_trans_response_raw(trans));
 			} else {
 				/* Merge into our KVS instead of just copying the response KVS because
