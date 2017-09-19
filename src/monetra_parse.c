@@ -29,6 +29,8 @@ static LM_trans_response_type_t LM_conn_determine_response_type(const unsigned c
 			case '\n':
 				return LM_TRANS_RESPONSE_CSV;
 			case '"':
+			case '_':
+			case '-':
 				break;
 			default:
 				if (!M_chr_isalnumsp(msg[i]))
