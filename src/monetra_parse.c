@@ -11,6 +11,7 @@ static LM_trans_response_type_t LM_conn_determine_response_type(const unsigned c
 	 * - If a "=", other than the first byte, is encountered before a "," it is KV data.
 	 * - If a "," is hit before an "=", it is CSV data
 	 * - If a newline is hit before 32bytes, assume it is a single-column CSV
+	 * - If a non-alpha numeric (or quote) char is hit, its blob data
 	 * - If neither is hit and there is still data on the line, it is blob data
 	 */
 	if (msg_len > 32)
@@ -27,6 +28,12 @@ static LM_trans_response_type_t LM_conn_determine_response_type(const unsigned c
 				return LM_TRANS_RESPONSE_CSV;
 			case '\n':
 				return LM_TRANS_RESPONSE_CSV;
+			case '"':
+				break;
+			default:
+				if (!M_chr_isalnumsp(msg[i]))
+					return LM_TRANS_RESPONSE_BULK;
+				break;
 		}
 	}
 
