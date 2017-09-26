@@ -26,7 +26,7 @@ option(LIBMONETRA_STATIC          "Build as a static library"                   
 option(LIBMONETRA_STATIC_PIC      "Build the static library as PIC (position independent)" FALSE)
 option(LIBMONETRA_INSTALL_HEADERS "Install headers"                                        TRUE)
 option(LIBMONETRA_INSTALL_LIBS    "Install libraries"                                      TRUE)
-option(LIBMONRTRA_INSTALL_EXPORTS "Install exports"                                        ${LIBMONETRA_INSTALL_LIBS})
+option(LIBMONETRA_INSTALL_EXPORTS "Install exports"                                        ${LIBMONETRA_INSTALL_LIBS})
 option(LIBMONETRA_BUILD_APPS      "Build apps"                                             TRUE)
 option(LIBMONETRA_BUILD_DOCS      "Build doxygen docs"                                     TRUE)
 option(LIBMONETRA_INSTALL_APPS    "Install apps"                                           TRUE)
