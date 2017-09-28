@@ -140,6 +140,15 @@ M_bool LM_SPEC LM_conn_change_mode(LM_conn_t *conn, LM_mode_t mode)
 }
 
 
+void LM_SPEC LM_conn_disable_ping(LM_conn_t *conn)
+{
+	if (conn == NULL)
+		return;
+
+	conn->disable_ping = M_TRUE;
+}
+
+
 M_bool LM_SPEC LM_conn_set_conn_timeout(LM_conn_t *conn, size_t to_secs)
 {
 	M_bool retval = M_FALSE;

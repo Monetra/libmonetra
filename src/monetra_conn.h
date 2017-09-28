@@ -38,6 +38,7 @@ struct LM_conn {
 	char                       *host;           /*!< Host to connect to     */
 	M_uint16                    port;           /*!< Port to connect to     */
 	LM_mode_t                   mode;           /*!< Set mode TLS/IP        */
+	M_bool                      disable_ping;   /*!< Disable PING on connect */
 	M_event_t                  *event;          /*!< Event handle to bind io object to */
 	size_t                      conn_timeout;   /*!< Set connection timeout */
 	size_t                      idle_timeout;   /*!< Idle connection timeout */

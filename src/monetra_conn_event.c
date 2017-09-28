@@ -112,6 +112,25 @@ static void LM_conn_cleanup_ping(LM_conn_t *conn)
 }
 
 
+static void LM_conn_event_set_connected(M_event_t *event, LM_conn_t *conn, M_list_t **events)
+{
+	LM_conn_cleanup_ping(conn);
+
+	/* Enqueue connected event */
+	conn->status = LM_CONN_STATUS_CONNECTED;
+	LM_conn_event_add(events, LM_EVENT_CONN_CONNECTED, NULL);
+
+	/* Move any transactions from the READY state to the PENDING state (and put them on the wire) */
+	LM_trans_send_messages(conn);
+
+	/* Create timer object or idle connection timeout */
+	if (conn->idle_timeout) {
+		conn->timer = M_event_timer_add(event, LM_conn_event_handler, conn);
+		M_event_timer_set_firecount(conn->timer, 1);
+	}
+}
+
+
 void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg)
 {
 	LM_conn_t              *conn   = user_arg;
@@ -125,11 +144,15 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 
 	switch (type) {
 		case M_EVENT_TYPE_CONNECTED:
-			/* Start 5 second timer for ping request, call back into self as the only time
-			 * an event type of OTHER will be triggered is by this timer! */
-			conn->timer   = M_event_timer_oneshot(event, 5 * 1000, M_FALSE, LM_conn_event_handler, conn);
-			conn->pingtxn = LM_trans_ping_request(conn);
-			conn->write_trigger  = M_event_trigger_add(event, LM_conn_event_handler_writetrigger, conn);
+			if (conn->disable_ping) {
+				LM_conn_event_set_connected(event, conn, &events);
+			} else {
+				/* Start 5 second timer for ping request, call back into self as the only time
+				 * an event type of OTHER will be triggered is by this timer! */
+				conn->timer   = M_event_timer_oneshot(event, 5 * 1000, M_FALSE, LM_conn_event_handler, conn);
+				conn->pingtxn = LM_trans_ping_request(conn);
+				conn->write_trigger  = M_event_trigger_add(event, LM_conn_event_handler_writetrigger, conn);
+			}
 			break;
 
 		case M_EVENT_TYPE_DISCONNECTED:
@@ -154,20 +177,7 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 				while ((err = LM_conn_parse_trans_buffer(conn, &trans)) == LM_CONN_PARSE_ERROR_SUCCESS) {
 					/* Enqueue events for each new transaction complete (except ping response) */
 					if (trans == conn->pingtxn) {
-						LM_conn_cleanup_ping(conn);
-
-						/* Enqueue connected event */
-						conn->status = LM_CONN_STATUS_CONNECTED;
-						LM_conn_event_add(&events, LM_EVENT_CONN_CONNECTED, NULL);
-
-						/* Move any transactions from the READY state to the PENDING state (and put them on the wire) */
-						LM_trans_send_messages(conn);
-
-						/* Create timer object or idle connection timeout */
-						if (conn->idle_timeout) {
-							conn->timer = M_event_timer_add(event, LM_conn_event_handler, conn);
-							M_event_timer_set_firecount(conn->timer, 1);
-						}
+						LM_conn_event_set_connected(event, conn, &events);
 					} else {
 						LM_conn_event_add(&events, LM_EVENT_TRANS_DONE, trans);
 					}

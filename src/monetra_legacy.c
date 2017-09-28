@@ -196,9 +196,11 @@ int LM_SPEC M_SetSSL_Files(M_CONN *conn, const char *sslkeyfile, const char *ssl
 
 void LM_SPEC M_VerifyConnection(M_CONN *conn, int tf)
 {
-	(void)conn;
-	(void)tf;
-	/* Can't be disabled anymore */
+	if (tf)
+		return;
+
+	/* Can only be disabled */
+	LM_conn_disable_ping((*conn)->conn);
 }
 
 void LM_SPEC M_VerifySSLCert(M_CONN *conn, int level)

@@ -301,6 +301,16 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_userdata(LM_conn_t *conn, void *user_data);
  */
 LM_EXPORT void * LM_SPEC LM_conn_get_userdata(LM_conn_t *conn);
 
+
+/*! Disable sending a PING request after a connection has been opened to verify
+ *  it is really connected to Monetra before allowing transactions to be sent.
+ *  The default is to send a PING.
+ *
+ *  \param[in] conn  Initialized (but not connected) connection object.
+ */
+LM_EXPORT void LM_SPEC LM_conn_disable_ping(LM_conn_t *conn);
+
+
 /*! Destroy the connection object. 
  *
  *  Destroying a connection object will also destroy any transaction objects associated
