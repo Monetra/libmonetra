@@ -151,8 +151,9 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 				 * an event type of OTHER will be triggered is by this timer! */
 				conn->timer   = M_event_timer_oneshot(event, 5 * 1000, M_FALSE, LM_conn_event_handler, conn);
 				conn->pingtxn = LM_trans_ping_request(conn);
-				conn->write_trigger  = M_event_trigger_add(event, LM_conn_event_handler_writetrigger, conn);
 			}
+
+			conn->write_trigger = M_event_trigger_add(event, LM_conn_event_handler_writetrigger, conn);
 			break;
 
 		case M_EVENT_TYPE_DISCONNECTED:
