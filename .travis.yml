@@ -38,7 +38,7 @@ jobs:
     - stage: normal builds
       os: linux
       env: 
-        - BUILD_TYPE="cmake" OPENSSL_ROOT_DIR="" GHPAGES_DEPLOY="YES"
+        - BUILD_TYPE="cmake" OPENSSL_ROOT_DIR="" GHPAGES_DEPLOY="yes"
       compiler: clang
     - os: linux
       env:
