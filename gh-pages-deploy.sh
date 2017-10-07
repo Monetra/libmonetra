@@ -28,12 +28,6 @@ cd gh-pages-deploy
 git config user.name "Travis CI" || exit 1
 git config user.email "${COMMIT_AUTHOR_EMAIL}" || exit 1
 
-# If there are no changes to the compiled out (e.g. this is a README update) then just bail.
-if git diff --quiet; then
-    echo "No changes to the output on this push; exiting."
-    exit 0
-fi
-
 git add -A .
 git commit -m "Deploy to GitHub Pages: ${CURRENT_COMMIT}"
 git push --quiet "${ORIGIN_URL_WITH_CREDENTIALS}" ${TARGET_BRANCH} > /dev/null 2>&1
