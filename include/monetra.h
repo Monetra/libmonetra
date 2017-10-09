@@ -7,6 +7,8 @@
  * Otherwise, the libmonetra API needs a typedef that would be provided by mstdlib */
 #ifndef __MSTDLIB_H__
 
+#include <stddef.h>
+
 #  ifdef _WIN32
 typedef  __int64              M_int64;
 #    ifdef _WIN64
