@@ -17,7 +17,11 @@ m4/lt~obsolete.m4
 # Qt Creator ignore
 CMakeLists.txt.user
 
+*.tmp
+
 thirdparty/*
+
+
 
 # ======================
 # https://github.com/github/gitignore/blob/master/C.gitignore
