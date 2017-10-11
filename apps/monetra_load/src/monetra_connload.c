@@ -8,8 +8,6 @@
 /* Handling for VT100 support. */
 #define M_HAS_VT100
 #ifdef _WIN32
-#  define WIN32_LEAN_AND_MEAN
-#  define NOMINMAX
 #  include <windows.h>
    /*  Virtual terminal processing is only available on recent versions of Windows 10.
     *  If the symbol isn't provided, it's not supported, so undefine M_HAS_VT100.

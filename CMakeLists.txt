@@ -103,6 +103,20 @@ set(lib_dest
 	ARCHIVE DESTINATION ${LIBMONETRA_INSTALL_LOCATION_LIBS}
 )
 
+# Set build flags for libmonetra library and apps, if we're not being chain-built by somebody else.
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+	add_definitions(
+		# Suppress annoying deprecation warnings on newer windows.
+		-D_CRT_SECURE_NO_DEPRECATE
+		-D_CRT_NONSTDC_NO_DEPRECATE
+		# Leave out little-used parts of windows.h (can still get them by including the specific headers you need).
+		-DWIN32_LEAN_AND_MEAN
+		-DNOMINMAX
+		# Explicitly request Windows Vista or newer feature level.
+		-D_WIN32_WINNT=0x0600
+	)
+endif ()
+
 add_subdirectory(include)
 add_subdirectory(src)
 
