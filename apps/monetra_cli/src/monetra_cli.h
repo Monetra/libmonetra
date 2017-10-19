@@ -57,6 +57,7 @@ typedef struct {
 	M_bool                send_pinksn;    /*!< Send a generic pin and ksn with kvs. */
 	M_hash_dict_t        *card;           /*!< Test card kvs to use. Overrides kvs and actions. */
 	M_hash_dict_t        *man_kvs;        /*!< KVS specified manually. */
+	M_list_str_t         *remove_keys;    /*!< KVS keys that should not be sent. */
 	M_hash_dict_t        *kvs;            /*!< KVS merged from all input. */
 
 	M_uint64              dup;            /*!< The number of times a transaction will be run. Value is number of time

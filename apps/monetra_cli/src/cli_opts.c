@@ -151,6 +151,25 @@ static void cli_opts_load_kvs(M_hash_dict_t *kvs, const char *string)
 	M_str_explode_free(kvs_parts, num_kvs);
 }
 
+static void cli_opts_load_rkeys(M_list_str_t *keys, const char *string)
+{
+	char   **parts;
+	size_t   num_parts = 0;
+	size_t   i;
+
+	parts = M_str_explode_quoted(',', string, M_str_len(string), '"', '\\', 0, &num_parts, NULL);
+	if (parts == NULL || num_parts == 0) {
+		M_str_explode_free(parts, num_parts);
+		return;
+	}
+
+	for (i=0; i<num_parts; i++) {
+		M_list_str_insert(keys, parts[i]);
+	}
+
+	M_str_explode_free(parts, num_parts);
+}
+
 static void cli_opts_load_pinksn(M_hash_dict_t *kvs, M_bool send)
 {
 	if (!send)
@@ -433,6 +452,8 @@ static M_bool cli_string_cb(char short_opt, const char *long_opt, const char *st
 		}
 	} else if (M_str_caseeq(long_opt, "kvs")) {
 		cli_opts_load_kvs(opts->man_kvs, string);
+	} else if (M_str_caseeq(long_opt, "rkeys")) {
+		cli_opts_load_rkeys(opts->remove_keys, string);
 	} else if (M_str_caseeq(long_opt, "card")) {
 		for (i=0; CARDS[i].name!=NULL; i++) {
 			if (M_str_caseeq(string, CARDS[i].name)) {
@@ -485,6 +506,7 @@ cli_opts_t *cli_opts_create(void)
 	opts->man_kvs        = M_hash_dict_create(8, 75, M_HASH_DICT_CASECMP);
 	opts->card           = M_hash_dict_create(8, 75, M_HASH_DICT_CASECMP);
 	opts->kvs            = M_hash_dict_create(8, 75, M_HASH_DICT_CASECMP|M_HASH_DICT_KEYS_ORDERED|M_HASH_DICT_KEYS_SORTASC);
+	opts->remove_keys    = M_list_str_create(M_LIST_STR_NONE);
 	opts->dup            = 1;
 
 	return opts;
@@ -501,6 +523,7 @@ void cli_opts_destroy(cli_opts_t *opts)
 	M_free(opts->keyfile);
 	M_free(opts->certfile);
 	M_free(opts->cadir);
+	M_list_str_destroy(opts->remove_keys);
 	M_hash_dict_destroy(opts->man_kvs);
 	M_hash_dict_destroy(opts->kvs);
 	M_hash_dict_destroy(opts->card);
@@ -530,6 +553,7 @@ cli_trans_t *cli_parse_args(int argc, const char *const *argv)
 	M_getopt_addstring(g, 0, "cadir", M_TRUE, "Directory with PEM encoded CA root certificates that will be loaded.", cli_string_cb);
 	M_getopt_addstring(g, 0, "cert_validation", M_TRUE, "Level of SSL certificate validation.", cli_string_cb);
 	M_getopt_addstring(g, 'k', "kvs", M_TRUE, "Key vaule pairs separated by , to run. E.G. key=val,key=val.", cli_string_cb);
+	M_getopt_addstring(g, 'l', "rkeys", M_TRUE, "Keys that should not be sent. May be present from an action. E.G. key,key.", cli_string_cb);
 	M_getopt_addstring(g, 'c', "card", M_TRUE, "Test card to use. See help for choices", cli_string_cb);
 	M_getopt_addinteger(g, 'd', "dup", M_FALSE, "Number of times the transaction should be duplicated and run in one request. Default is 1.", cli_integer_cb);
 	M_getopt_addstring(g, 'r', "random_amount", M_TRUE, "Use a random amount [min:]max (will never be $8.00 - $8.99 due to delay trigger). Default min if not specified is $0.01.", cli_string_cb);

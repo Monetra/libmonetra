@@ -4,15 +4,14 @@ cli_trans_t *cli_trans_create(cli_opts_t *opts, const char **fail)
 {
 	cli_trans_t             *trans;
 	M_hash_dict_t           *kvs;
-	M_hash_dict_enum_t      *he;
 	M_rand_t                *rand;
-	const char              *key;
-	const char              *val;
 	char                     id[32];
 	M_uint64                 ramount;
 	struct M_list_callbacks  lcbs;
 	size_t                   num;
+	size_t                   len;
 	size_t                   i;
+	size_t                   j;
 
 	M_mem_set(&lcbs, 0, sizeof(lcbs));
 
@@ -80,15 +79,13 @@ cli_trans_t *cli_trans_create(cli_opts_t *opts, const char **fail)
 
 		/* Add in the KVS that was parsed from the command line. The command line parser
  		 * already merged the manual and action KVS into ->kvs. */
-		M_hash_dict_enumerate(opts->kvs, &he);
-		while (M_hash_dict_enumerate_next(opts->kvs, he, &key, &val)) {
-			if (M_str_isempty(val)) {
-				M_hash_dict_remove(kvs, key);
-			} else {
-				M_hash_dict_insert(kvs, key, val);
-			}
+		M_hash_dict_merge(&kvs, M_hash_dict_duplicate(opts->kvs));
+
+		/* Remove KVS that we don't want sent. */
+		len = M_list_str_len(opts->remove_keys);
+		for (j=0; j<len; j++) {
+			M_hash_dict_remove(kvs, M_list_str_at(opts->remove_keys, j));
 		}
-		M_hash_dict_enumerate_free(he);
 
 		/* If a random amount is used we want to add it to the KVS. Overriding an amount if
  		 * it was already specified. It is possible that random amount is specified with

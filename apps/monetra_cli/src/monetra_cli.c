@@ -199,6 +199,7 @@ int main(int argc, char **argv)
 	el   = M_event_create(M_EVENT_FLAG_NONE);
 
 	conn = LM_conn_init(el, trans_callback, trans->host, trans->port);
+	LM_conn_disable_ping(conn);
 	LM_conn_set_tls_clientctx(conn, ctx);
 	/* User data is the cli trans so transactions can be pulled out of it
  	 * in the event loop. */
