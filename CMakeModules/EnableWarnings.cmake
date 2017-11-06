@@ -87,6 +87,9 @@ else ()
 		# Treat implicit variable typing and implicit function declarations as errors.
 		-Werror=implicit-int
 		-Werror=implicit-function-declaration
+
+		# Make MacOSX honor -mmacosx-version-min
+		-Werror=partial-availability
 	)
 endif ()
 
