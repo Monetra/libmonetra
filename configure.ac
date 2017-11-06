@@ -145,6 +145,7 @@ AX_APPEND_COMPILE_FLAGS([\
 	-Wdisabled-optimization -Wendif-labels -Wpacked-bitfield-compat \
 	-Wformat-security -Woverlength-strings -Wsign-conversion -Wstrict-aliasing \
 	-Wstrict-overflow -Wsync-nand -Wvolatile-register-var -Wconversion \
+	-Werror=partial-availability
 ], [CFLAGS], [-Werror])
 
 
