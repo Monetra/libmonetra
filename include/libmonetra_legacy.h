@@ -398,7 +398,8 @@ LM_EXPORT int LM_SPEC M_FreeResponseKeys(char **keys, int num_keys);
 /* ---------------------------------------- */
 
 /*! Returns whether a particular transaction succeeded or failed. If a
- * detailed code is needed, please see M_ReturnCode().
+ * detailed code is needed, please use M_ResponseParam() to retrieve the "code"
+ * response key/value pair.
  *
  * \param[in,out] conn #M_CONN passed by reference, or allocated #M_CONN pointer
  * \param[in] identifier reference for transaction as returned by M_TransNew()
