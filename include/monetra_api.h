@@ -451,7 +451,7 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_idle_timeout(LM_conn_t *conn, size_t to_sec
  *  kept for long term access.
  *
  *  \param[in] conn  Initialized connection object.
- *  \return M_TRUE on success or M_FALSE on failure.
+ *  \return string representing error, or NULL if unable to retrieve message.
  */
 LM_EXPORT const char * LM_SPEC LM_conn_error(LM_conn_t *conn);
 
