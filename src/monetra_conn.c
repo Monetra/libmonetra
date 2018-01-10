@@ -210,7 +210,7 @@ M_bool LM_SPEC LM_conn_set_tls_cert(LM_conn_t *conn, const char *key, size_t key
 	M_thread_mutex_lock(conn->lock);
 	/* Allow change if not in the process of connecting */
 	if (conn->status != LM_CONN_STATUS_CONNECTING && conn->status != LM_CONN_STATUS_CONNECTED) {
-		if (M_tls_clientctx_set_cert(conn->tlsctx, key, key_len, crt, crt_len, NULL, 0)) {
+		if (M_tls_clientctx_set_cert(conn->tlsctx, (const M_uint8 *)key, key_len, (const M_uint8 *)crt, crt_len, NULL, 0)) {
 			retval = M_TRUE;
 		}
 	}
@@ -312,7 +312,7 @@ LM_conn_status_t LM_SPEC LM_conn_status(LM_conn_t *conn)
 }
 
 
-//#define DEBUG_COMMS
+/*#define DEBUG_COMMS*/
 
 #ifdef DEBUG_COMMS
 
