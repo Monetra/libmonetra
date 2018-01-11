@@ -656,7 +656,7 @@ M_BEGIN_IGNORE_DEPRECATIONS
 	*listings = malloc(sizeof(**listings) * cnt);
 M_END_IGNORE_DEPRECATIONS
 	for (i=0; i<cnt; i++) {
-		(*listings)[i]=LM_trans_internal_id(M_list_at(list, i));
+		(*listings)[i]=(M_uintptr)LM_trans_internal_id(M_list_at(list, i));
 	}
 	M_list_destroy(list, M_TRUE);
 
