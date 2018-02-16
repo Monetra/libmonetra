@@ -47,15 +47,15 @@ install:
   # Clone C-ARES into mstdlib thirdparty dir (will be chain-built).
   - git clone https://github.com/c-ares/c-ares.git thirdparty/mstdlib/thirdparty/c-ares --depth 1
   # Download SQLite amalgamation file, extract into thirdparty dir (will be chain built)
-  - appveyor DownloadFile "http://sqlite.org/2017/sqlite-amalgamation-3200100.zip" -FileName sqlite_amal.zip
+  - appveyor DownloadFile "http://sqlite.org/2018/sqlite-amalgamation-3220000.zip" -FileName sqlite_amal.zip
   - 7z x sqlite_amal.zip > nul
-  - move sqlite-amalgamation-3200100 thirdparty/mstdlib/thirdparty/sqlite-amalgamation
+  - move sqlite-amalgamation-3220000 thirdparty/mstdlib/thirdparty/sqlite-amalgamation
   # Rename sh.exe as sh.exe in PATH interferes with MinGW.
   - rename "C:\Program Files\Git\usr\bin\sh.exe" "sh2.exe"
   # Download and extract ninja, add it to PATH.
   - mkdir C:\projects\ninja
   - cd C:\projects\ninja
-  - appveyor DownloadFile "https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-win.zip" -FileName ninja.zip
+  - appveyor DownloadFile "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip" -FileName ninja.zip
   - 7z x ninja.zip > nul
   - set PATH=C:\projects\ninja;%PATH%
   - ninja --version
