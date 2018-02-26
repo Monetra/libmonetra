@@ -2,45 +2,6 @@
 #include "monetra_conn.h"
 #include "monetra_trans.h"
 
-/*! Convert a dictionary into a key/value pair string */
-static M_bool M_hash_dict_serialize_buf(M_hash_dict_t *dict, M_buf_t *buf, unsigned char key_delim, unsigned char value_delim, unsigned char quote_char, unsigned char escape_char)
-{
-	M_hash_dict_enum_t *hashenum = NULL;
-	const char         *key;
-	const char         *val;
-
-	if (dict == NULL || M_hash_dict_num_keys(dict) == 0)
-		return M_FALSE;
-
-	M_hash_dict_enumerate(dict, &hashenum);
-	while (M_hash_dict_enumerate_next(dict, hashenum, &key, &val)) {
-		M_buf_add_str(buf, key);
-		M_buf_add_byte(buf, key_delim);
-		if (val != NULL) {
-			M_buf_add_byte(buf, quote_char);
-			if (M_mem_chr(val, quote_char, M_str_len(val)) != NULL || M_mem_chr(val, escape_char, M_str_len(val)) != NULL) {
-				/* If string contains a quote or escape char, we need to escape it */
-				for ( ; *val != '\0'; val++) {
-					if (*val == quote_char || *val == escape_char)
-						M_buf_add_byte(buf, escape_char);
-					M_buf_add_byte(buf, (unsigned char)*val);
-				}
-			} else {
-				/* Value doesn't contain a double quote, just output it */
-				M_buf_add_str(buf, val);
-			}
-			M_buf_add_byte(buf, quote_char);
-		} else {
-			/* Value is NULL, don't even put quotes around it so when we parse it
-			 * back out we know to insert NULL as the value */
-		}
-		M_buf_add_byte(buf, value_delim);
-	}
-
-	M_hash_dict_enumerate_free(hashenum);
-	return M_TRUE;
-}
-
 void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
 {
 	/* STX */
@@ -57,7 +18,7 @@ void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
 		/* Rewrite for proper ping message format */
 		M_buf_add_str(conn->outbuf, "PING");
 	} else {
-		M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '=', '\n', '"', '"');
+		M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '\n', '=', '"', '"', M_HASH_DICT_SER_FLAG_NONE);
 	}
 	/* Clear dictionary for security purposes, may contain passwords or sensitive
 	 * account information */
