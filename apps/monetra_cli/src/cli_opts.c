@@ -546,7 +546,7 @@ cli_trans_t *cli_parse_args(int argc, const char *const *argv)
 
 	M_getopt_addstring(g, 'u', "username", M_TRUE, "Username to run the transaction as.", cli_string_cb);
 	M_getopt_addstring(g, 'p', "password", M_TRUE, "Password to use.", cli_string_cb);
-	M_getopt_addstring(g, 'a', "host", M_TRUE, "Host noame of the server.", cli_string_cb);
+	M_getopt_addstring(g, 'a', "host", M_TRUE, "Host name of the server.", cli_string_cb);
 	M_getopt_addinteger(g, 't', "port", M_TRUE, "Port to connet to.", cli_integer_cb);
 	M_getopt_addstring(g, 0, "keyfile", M_TRUE, "Key file to use when certificate restrictions are in place.", cli_string_cb);
 	M_getopt_addstring(g, 0, "certfile", M_TRUE, "Cert file to use when certificate restrictions are in place.", cli_string_cb);
