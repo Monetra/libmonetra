@@ -48,6 +48,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# Set RPATH so that executables can find their libs in the install package.
+if (NOT WIN32 AND NOT APPLE)
+	set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:\$ORIGIN/")
+endif ()
+
 # For chain building.
 set(LIBMONETRA_TOPLEVEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -272,13 +277,19 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND LIBMONETRA_INSTALL_LI
 	set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 	set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 
-
 	# Add "dist" target - builds, packages, then runs any post-package steps (note that any commands will be run in the root build dir).
 	set(postpkg
 		COMMAND "${CMAKE_COMMAND}" --build . --config $<CONFIG> # Build "all" target
 		COMMAND "${CMAKE_CPACK_COMMAND}"                        # Run cpack
 	)
 
+	if (STGZ IN_LIST CPACK_GENERATOR)
+		# We'd rather have the self-extracting tarball's extension be *.run, instead of *.sh.
+		list(APPEND postpkg
+			COMMAND "${CMAKE_COMMAND}" -E echo "PostPkg: Renaming ${CPACK_PACKAGE_FILE_NAME}.sh to ${CPACK_PACKAGE_FILE_NAME}.run"
+			COMMAND "${CMAKE_COMMAND}" -E rename "${CPACK_PACKAGE_FILE_NAME}.sh" "${CPACK_PACKAGE_FILE_NAME}.run"
+		)
+	endif ()
 	if (WIX IN_LIST CPACK_GENERATOR)
 		# Sign the .msi file after creating it, if a signing certificate name or file path has been provided.
 		include(CodeSign)
