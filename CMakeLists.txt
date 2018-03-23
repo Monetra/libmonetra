@@ -13,6 +13,7 @@ include(Harden)
 include(InstallExports) # Provides install_exports()
 include(InstallDepLibs) # Provides install_deplibs() and install_system_deplibs()
 include(SetPackageName) # Provides set_package_name()
+include(MingwCompat)    # Provides convert_mingw_implibs_to_vs()
 
 include(AddressSanitizer) # Provides M_ASAN option, if supported by compiler
 

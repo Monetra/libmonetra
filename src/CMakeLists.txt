@@ -86,6 +86,8 @@ if (WIN32)
 		PREFIX        "lib"
 		IMPORT_PREFIX "lib"
 	)
+
+	convert_mingw_implibs_to_vs(libmonetra libmonetra_stdcall)
 endif ()
 
 # Installation rules.
