@@ -67,6 +67,9 @@ static M_bool queue_lm_trans(cli_trans_t *trans, LM_conn_t *conn)
 	const char         *key;
 	const char         *val;
 
+	if (trans == NULL)
+		return M_FALSE;
+
 	kvs = M_list_take_first(trans->kvs);
 	if (kvs == NULL)
 		return M_FALSE;
@@ -133,12 +136,14 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 			M_hash_dict_destroy(kvs);
 
 			LM_trans_delete(trans);
-			cli_trans->outstanding_cnt--;
-			
-			queue_lm_trans(cli_trans, conn);
-			if (cli_trans->outstanding_cnt == 0) {
-				/* This is the last transaction. */
-				LM_conn_disconnect(conn);
+			if (cli_trans != NULL) {
+				cli_trans->outstanding_cnt--;
+
+				queue_lm_trans(cli_trans, conn);
+				if (cli_trans->outstanding_cnt == 0) {
+					/* This is the last transaction. */
+					LM_conn_disconnect(conn);
+				}
 			}
 			break;
 		case LM_EVENT_TRANS_ERROR:
