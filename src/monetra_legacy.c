@@ -17,7 +17,7 @@ static char *M_global_capath = NULL;
 
 int LM_SPEC M_InitEngine_ex(enum m_ssllock_style lockstyle)
 {
-	return LM_init((lockstyle == M_SSLLOCK_EXTERNAL)?LM_INIT_SSLLOCK_EXTERNAL:LM_INIT_NORMAL);
+	return (int)(LM_init((lockstyle == M_SSLLOCK_EXTERNAL)?LM_INIT_SSLLOCK_EXTERNAL:LM_INIT_NORMAL));
 }
 
 int LM_SPEC M_InitEngine(const char *location)
@@ -191,7 +191,7 @@ int LM_SPEC M_SetSSL_Files(M_CONN *conn, const char *sslkeyfile, const char *ssl
 {
 	if (conn == NULL || *conn == NULL || M_str_isempty(sslkeyfile) || M_str_isempty(sslcertfile))
 		return 0;
-	return LM_conn_set_tls_cert_files((*conn)->conn, sslkeyfile, sslcertfile);
+	return (int)(LM_conn_set_tls_cert_files((*conn)->conn, sslkeyfile, sslcertfile));
 }
 
 void LM_SPEC M_VerifyConnection(M_CONN *conn, int tf)
@@ -414,7 +414,7 @@ int LM_SPEC M_TransKeyVal(M_CONN *conn, M_uintptr identifier, const char *key, c
 	if (trans == NULL)
 		return 0;
 
-	return LM_trans_set_param(trans, key, value);
+	return (int)(LM_trans_set_param(trans, key, value));
 }
 
 int LM_SPEC M_TransBinaryKeyVal(M_CONN *conn, M_uintptr identifier, const char *key, const char *value, int value_len)
@@ -428,7 +428,7 @@ int LM_SPEC M_TransBinaryKeyVal(M_CONN *conn, M_uintptr identifier, const char *
 	if (trans == NULL)
 		return 0;
 
-	return LM_trans_set_param_binary(trans, key, (const unsigned char *)value, (size_t)value_len);
+	return (int)(LM_trans_set_param_binary(trans, key, (const unsigned char *)value, (size_t)value_len));
 }
 
 int LM_SPEC M_TransSend(M_CONN *conn, M_uintptr identifier)
