@@ -8,9 +8,9 @@ cli_trans_t *cli_trans_create(cli_opts_t *opts, const char **fail)
 	char                     id[32];
 	M_uint64                 ramount;
 	struct M_list_callbacks  lcbs;
-	size_t                   num;
+	M_uint64                 num;
+	M_uint64                 i;
 	size_t                   len;
-	size_t                   i;
 	size_t                   j;
 
 	M_mem_set(&lcbs, 0, sizeof(lcbs));
@@ -103,7 +103,7 @@ cli_trans_t *cli_trans_create(cli_opts_t *opts, const char **fail)
 
 		/* The identifier is set last because it is internal to this app and
 		 * we don't want someone sending it in as a KV from overriding it. */
-		M_snprintf(id, sizeof(id), "%zu", i+1);
+		M_snprintf(id, sizeof(id), "%llu", i+1);
 		M_hash_dict_insert(kvs, "identifier", id);
 
 		M_list_insert(trans->kvs, kvs);
