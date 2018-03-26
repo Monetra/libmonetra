@@ -38,7 +38,7 @@ option(LIBMONETRA_BUILD_DOCS      "Build doxygen docs"                          
 option(LIBMONETRA_BUILD_TESTS     "Build tests"                                            TRUE)
 option(LIBMONETRA_INSTALL_HEADERS "Install headers"                                        TRUE)
 option(LIBMONETRA_INSTALL_LIBS    "Install libraries"                                      TRUE)
-option(LIBMONETRA_INSTALL_EXPORTS "Install exports"                                        ${LIBMONETRA_INSTALL_LIBS})
+option(LIBMONETRA_INSTALL_EXPORTS "Install exports"                                        ${LIBMONETRA_INSTALL_HEADERS})
 option(LIBMONETRA_INSTALL_APPS    "Install apps"                                           TRUE)
 option(LIBMONETRA_USE_VALGRIND    "Run tests with valgrind when running 'make check'"      TRUE)
 mark_as_advanced(FORCE LIBMONETRA_INSTALL_EXPORTS)
