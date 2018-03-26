@@ -120,8 +120,15 @@ endif ()
 set(lib_dest
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION ${LIBMONETRA_INSTALL_LOCATION_LIBS}
-	ARCHIVE DESTINATION ${LIBMONETRA_INSTALL_LOCATION_LIBS}
 )
+# Note: only install static and import libs if we're installing headers - otherwise, this isn't
+#       intended to be a package you can actually build against, we're just distributing the
+#       libraries as chain-built dependencies.
+if (LIBMONETRA_INSTALL_HEADERS)
+	list(APPEND lib_dest
+		ARCHIVE DESTINATION ${LIBMONETRA_INSTALL_LOCATION_LIBS}
+	)
+endif ()
 
 # Set build flags for libmonetra library and apps, if we're not being chain-built by somebody else.
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
