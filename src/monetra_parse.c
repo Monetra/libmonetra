@@ -26,6 +26,7 @@ static LM_trans_response_type_t LM_conn_determine_response_type(const unsigned c
 				return LM_TRANS_RESPONSE_KV;
 			case ',':
 				return LM_TRANS_RESPONSE_CSV;
+			case '\r':
 			case '\n':
 				return LM_TRANS_RESPONSE_CSV;
 			case '"':
