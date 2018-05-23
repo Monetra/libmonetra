@@ -1,0 +1,12 @@
+<!-- Patch to add root directory of installation to end of system path variable. -->
+<CPackWiXPatch>
+  <CPackWiXFragment Id="CM_DP_bin">
+    <Component Id="SetEnvVars" KeyPath="yes" Guid="138C2176-F9A0-4C7B-897C-3FD68146C88B">
+	  <Environment Id="SystemPathEntryENV" Action="set" Part="last" Name="PATH" Value="[INSTALL_ROOT]" System="yes"/>
+	</Component>
+  </CPackWiXFragment>
+
+  <CPackWiXFragment Id="#PRODUCTFEATURE">
+    <ComponentRef Id="SetEnvVars" />
+  </CPackWiXFragment>
+</CPackWiXPatch>

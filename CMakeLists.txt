@@ -237,6 +237,9 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND LIBMONETRA_INSTALL_LI
 
 			# Don't want to put version number in default installation directory.
 			set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
+
+			# Add fragment of WiX code to add the installed programs to the system path.
+			set(CPACK_WIX_PATCH_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/wix_patch.xml")
 		endif ()
 	elseif (APPLE)
 		# TODO: add DMG package here, after we get Mstdlib and LibMonetra reorganized as frameworks on macos

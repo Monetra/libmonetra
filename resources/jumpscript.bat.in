@@ -1,0 +1,6 @@
+@echo off
+rem Call bin\@EXE_NAME@.exe, and forward all arguments. This allows you to add the executable
+rem to the path by adding the directory containing this jumpscript, instead of bin.  Since we
+rem have bundled DLL's in bin/, this prevents other exe's from linking against these DLL's
+rem (because Windows uses the PATH for DLL resolution, as well as for finding executables).
+"%~dp0bin\@EXE_NAME@.exe" %*
