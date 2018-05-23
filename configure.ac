@@ -122,29 +122,40 @@ fi
 
 
 AX_APPEND_COMPILE_FLAGS([\
-	-W -Wall -Wextra -Wchar-subscripts -Wcomment -Wno-coverage-mismatch \
-	-Wdouble-promotion -Wformat -Wnonnull -Winit-self -Wimplicit-int \
-	-Wimplicit-function-declaration -Wimplicit -Wignored-qualifiers -Wmain \
-	-Wmissing-braces -Wmissing-include-dirs -Wparentheses -Wsequence-point \
-	-Wreturn-type -Wswitch -Wtrigraphs -Wunused-but-set-parameter \
-	-Wunused-but-set-variable -Wunused-function -Wunused-label \
-	-Wunused-local-typedefs -Wunused-parameter -Wunused-variable -Wunused-value \
-	-Wunused -Wuninitialized -Wmaybe-uninitialized -Wunknown-pragmas \
-	-Wmissing-format-attribute -Warray-bounds \
-	-Wtrampolines -Wfloat-equal \
-	-Wdeclaration-after-statement -Wundef -Wshadow -Wunsafe-loop-optimizations \
-	-Wpointer-arith -Wtype-limits -Wbad-function-cast -Wcast-qual \
-	-Wcast-align -Wwrite-strings -Wclobbered -Wempty-body \
-	-Wenum-compare -Wjump-misses-init -Wsign-compare -Wsizeof-pointer-memaccess \
-	-Waddress -Wlogical-op -Waggregate-return \
-	-Wstrict-prototypes -Wold-style-declaration -Wold-style-definition \
-	-Wmissing-parameter-type -Wmissing-prototypes -Wmissing-declarations \
-	-Wmissing-field-initializers -Woverride-init -Wpacked -Wredundant-decls \
-	-Wnested-externs -Winline -Winvalid-pch -Wvariadic-macros -Wvarargs \
-	-Wvector-operation-performance -Wvla -Wpointer-sign \
-	-Wdisabled-optimization -Wendif-labels -Wpacked-bitfield-compat \
-	-Wformat-security -Woverlength-strings -Wsign-conversion -Wstrict-aliasing \
-	-Wstrict-overflow -Wsync-nand -Wvolatile-register-var -Wconversion \
+	-Wall \
+	-Wextra \
+	-Wcast-align \
+	-Wconversion \
+	-Wdeclaration-after-statement \
+	-Wdouble-promotion \
+	-Wfloat-equal \
+	-Wformat-security \
+	-Winit-self \
+	-Wjump-misses-init \
+	-Wlogical-op \
+	-Wmissing-braces \
+	-Wmissing-declarations \
+	-Wmissing-format-attribute \
+	-Wmissing-include-dirs \
+	-Wmissing-prototypes \
+	-Wnested-externs \
+	-Wno-coverage-mismatch \
+	-Wold-style-definition \
+	-Wpacked \
+	-Wpointer-arith \
+	-Wredundant-decls \
+	-Wshadow \
+	-Wsign-conversion \
+	-Wstrict-overflow \
+	-Wstrict-prototypes \
+	-Wtrampolines \
+	-Wundef \
+	-Wunused \
+	-Wvariadic-macros \
+	-Wvla \
+	-Wwrite-strings \
+	-Werror=implicit-int \
+	-Werror=implicit-function-declaration \
 	-Werror=partial-availability \
 ], [CFLAGS], [-Werror])
 
@@ -168,7 +179,7 @@ AC_ARG_ENABLE(valgrind-testing,
 )
 
 dnl ----------- MSTDLIB -------------
-AC_ARG_ENABLE(internal-build, 
+AC_ARG_ENABLE(internal-build,
 	AC_HELP_STRING([--enable-internal-build],
 		[ Disables checks for precompiled dependencies like mstdlib.  Instead it assumes the include paths and library paths have already been set up appropriately ]),
 	[ INTERNAL_BUILD=yes ],
