@@ -153,7 +153,7 @@ M_bool LM_SPEC LM_conn_set_conn_timeout(LM_conn_t *conn, size_t to_secs)
 {
 	M_bool retval = M_FALSE;
 
-	if (conn == NULL)
+	if (conn == NULL || to_secs == 0)
 		return M_FALSE;
 
 	M_thread_mutex_lock(conn->lock);
@@ -381,6 +381,7 @@ M_bool LM_SPEC LM_conn_connect(LM_conn_t *conn)
 		conn->tlsctx = M_tls_clientctx_create();
 		M_tls_clientctx_set_default_trust(conn->tlsctx);
 		M_tls_clientctx_set_verify_level(conn->tlsctx, M_TLS_VERIFY_FULL);
+		M_tls_clientctx_set_negotiation_timeout_ms(conn->tlsctx, conn->cnn_timeout * 1000);
 	}
 
 	/* Create the IO object for the network connection */
@@ -392,6 +393,9 @@ M_bool LM_SPEC LM_conn_connect(LM_conn_t *conn)
 
 	/* TCP Keepalives */
 	M_io_net_set_keepalives(conn->io, 4 /* idle_s */, 15 /* retry_s */, 3 /* retry_cnt */);
+
+	/* Connect Timeout */
+	M_io_net_set_connect_timeout_ms(conn->io, conn->conn_timeout * 1000);
 
 	/* Wrap network connection in TLS if tls is in use */
 	if (conn->mode == LM_MODE_TLS) {
