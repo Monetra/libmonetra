@@ -50,7 +50,8 @@ static void LM_conn_event_add(M_list_t **events, LM_event_type_t type, LM_trans_
 static void LM_conn_event_handle_conn_error(M_list_t **events, LM_conn_t *conn, M_event_type_t type)
 {
 	LM_trans_t        *trans;
-	M_queue_foreach_t *q_foreach = NULL;
+	M_queue_foreach_t *q_foreach           = NULL;
+	M_bool             disconnect_was_idle = (conn->status == LM_CONN_STATUS_IDLE_TIMEOUT);
 
 	/* Destroy the io object and any associated unprocessed data */
 	M_io_destroy(conn->io);
@@ -68,9 +69,15 @@ static void LM_conn_event_handle_conn_error(M_list_t **events, LM_conn_t *conn, 
 	}
 
 	/* Send events for any "ready" transactions letting them know the connection
-	 * did not succeed */
-	while (M_queue_foreach(conn->trans_ready, &q_foreach, (void **)&trans)) {
-		LM_conn_event_add(events, LM_EVENT_TRANS_NOCONNECT, trans);
+	 * did not succeed.  Don't do this if there was an idle timeout as that means
+	 * a new transaction was enqueued when an idle timeout was already triggered,
+	 * so this isn't a failure to connect but rather the actual disconnect got
+	 * delivered for part of the graceful disconnect sequence.  The connection will
+	 * be brought back online and these requests will be sent out. */
+	if (!disconnect_was_idle) {
+		while (M_queue_foreach(conn->trans_ready, &q_foreach, (void **)&trans)) {
+			LM_conn_event_add(events, LM_EVENT_TRANS_NOCONNECT, trans);
+		}
 	}
 
 	/* Mark any pending transactions as an error, send error events for each txn */
@@ -118,6 +125,7 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 	M_list_t               *events = NULL;
 	LM_conn_events_entry_t *entry;
 	M_bool                  request_disconnect = M_FALSE;
+	M_bool                  request_connect    = M_FALSE;
 	(void)io; /* we'll use our own io reference in conn */
 
 	M_thread_mutex_lock(conn->lock);
@@ -238,15 +246,27 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 	}
 	M_list_destroy(events, M_TRUE);
 
-	/* Untag the connection as in-use */
+	/* Untag the connection as in-use. Check to see if we need to reconnect. */
 	M_thread_mutex_lock(conn->lock);
 	conn->in_use = M_FALSE;
+	/* Looks like we had disconnected due to an idle timeout, then before the connection was
+	 * fully brought down (since we do this gracefully which could take a little time),
+	 * we enqueued a new transaction.  We need to detect this and start to reconnect so
+	 * that transaction can be sent. */
+	if (conn->status == LM_CONN_STATUS_DISCONNECTED && M_queue_len(conn->trans_ready)) {
+		request_connect = M_TRUE;
+	}
 	M_thread_mutex_unlock(conn->lock);
 
 	/* Request disconnect was set, trigger it when we're not holding a conn lock */
 	if (request_disconnect) {
 		LM_conn_disconnect(conn);
 		conn->status = LM_CONN_STATUS_IDLE_TIMEOUT;
+	}
+
+	/* Should only happen if new request is enqueued while a disconnect due to idle timeout is processing */
+	if (request_connect) {
+		LM_conn_connect(conn);
 	}
 
 	/* Check to see if the user tried to kill our conn object, if so, let it clean
