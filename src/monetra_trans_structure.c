@@ -18,7 +18,7 @@ void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
 		/* Rewrite for proper ping message format */
 		M_buf_add_str(conn->outbuf, "PING");
 	} else {
-		M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '\n', '=', '"', '"', M_HASH_DICT_SER_FLAG_NONE);
+		M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '\n', '=', '"', '"', M_HASH_DICT_SER_FLAG_QUOTE_NON_ANS);
 	}
 	/* Clear dictionary for security purposes, may contain passwords or sensitive
 	 * account information */
