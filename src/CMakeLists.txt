@@ -87,6 +87,12 @@ if (WIN32)
 		IMPORT_PREFIX "lib"
 	)
 
+	if (MINGW)
+		target_link_libraries(${PROJECT_NAME}_stdcall
+			PRIVATE -Wl,--add-stdcall-alias
+		)
+	endif ()
+
 	convert_mingw_implibs_to_vs(libmonetra libmonetra_stdcall)
 endif ()
 
