@@ -1,3 +1,3 @@
-ADD_SUBDIRECTORY (monetra_load)
-ADD_SUBDIRECTORY (monetra_connload)
-ADD_SUBDIRECTORY (monetra_cli)
+add_subdirectory(monetra_load)
+add_subdirectory(monetra_connload)
+add_subdirectory(monetra_cli)

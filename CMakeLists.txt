@@ -7,6 +7,7 @@ project(LibMonetra
 	VERSION   8.3.0
 	LANGUAGES C
 )
+set(PROJECT_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 include(EnableWarnings)
 include(Harden)
@@ -22,8 +23,7 @@ set(LIBMONETRA_VERSION_MAJOR    ${PROJECT_VERSION_MAJOR})
 set(LIBMONETRA_VERSION_MINOR    ${PROJECT_VERSION_MINOR})
 set(LIBMONETRA_VERSION_PATCH    ${PROJECT_VERSION_PATCH})
 set(LIBMONETRA_VERSION_STRING   ${PROJECT_VERSION})
-
-set(LIBMONETRA_SOVERSION_STRING ${LIBMONETRA_VERSION_MAJOR})
+set(LIBMONETRA_SOVERSION_STRING ${PROJECT_SOVERSION})
 
 # Set same version variable as find_package, in parent scope, so that chain-builds
 # have access to the version info.
@@ -31,16 +31,15 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 	set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION} PARENT_SCOPE)
 endif ()
 
-option(LIBMONETRA_STATIC          "Build as a static library"                              FALSE)
-option(LIBMONETRA_STATIC_PIC      "Build the static library as PIC (position independent)" FALSE)
-option(LIBMONETRA_BUILD_APPS      "Build apps"                                             TRUE)
-option(LIBMONETRA_BUILD_DOCS      "Build doxygen docs"                                     TRUE)
-option(LIBMONETRA_BUILD_TESTS     "Build tests"                                            TRUE)
-option(LIBMONETRA_INSTALL_HEADERS "Install headers"                                        TRUE)
-option(LIBMONETRA_INSTALL_LIBS    "Install libraries"                                      TRUE)
-option(LIBMONETRA_INSTALL_EXPORTS "Install exports"                                        ${LIBMONETRA_INSTALL_HEADERS})
-option(LIBMONETRA_INSTALL_APPS    "Install apps"                                           TRUE)
-option(LIBMONETRA_USE_VALGRIND    "Run tests with valgrind when running 'make check'"      TRUE)
+option(LIBMONETRA_STATIC          "Build as a static library"                         FALSE)
+option(LIBMONETRA_BUILD_APPS      "Build apps"                                        TRUE)
+option(LIBMONETRA_BUILD_DOCS      "Build doxygen docs"                                TRUE)
+option(LIBMONETRA_BUILD_TESTS     "Build tests"                                       TRUE)
+option(LIBMONETRA_INSTALL_HEADERS "Install headers"                                   TRUE)
+option(LIBMONETRA_INSTALL_LIBS    "Install libraries"                                 TRUE)
+option(LIBMONETRA_INSTALL_EXPORTS "Install exports"                                   ${LIBMONETRA_INSTALL_HEADERS})
+option(LIBMONETRA_INSTALL_APPS    "Install apps"                                      TRUE)
+option(LIBMONETRA_USE_VALGRIND    "Run tests with valgrind when running 'make check'" TRUE)
 mark_as_advanced(FORCE LIBMONETRA_INSTALL_EXPORTS)
 
 
@@ -84,7 +83,11 @@ endif ()
 
 # Find and use mstdlib.
 set(local_mstdlib TRUE)
-if (NOT TARGET Mstdlib::base OR NOT TARGET Mstdlib::formats OR NOT TARGET Mstdlib::thread OR NOT TARGET Mstdlib::io OR NOT TARGET Mstdlib::tls)
+if (NOT TARGET Mstdlib::base OR
+	NOT TARGET Mstdlib::formats OR
+	NOT TARGET Mstdlib::thread OR
+	NOT TARGET Mstdlib::io OR
+	NOT TARGET Mstdlib::tls)
 	if (IS_DIRECTORY "${LIBMONETRA_TOPLEVEL_DIR}/thirdparty/mstdlib")
 			# Override the following settings in the subdirectory, and hide them from the user.
 			set(MSTDLIB_BUILD_TESTS     FALSE CACHE INTERNAL "")
@@ -153,10 +156,6 @@ endif ()
 
 # Tests need to check for the test frame work so it will handle enabled/disable itself.
 add_subdirectory(test)
-
-# Trick to make headers and scripts show up in IDEs. Adds a phony target that references the files.
-file(GLOB_RECURSE headers_and_scripts *.h)
-add_custom_target(_libmonetra_root_extra_files ALL SOURCES ${headers_and_scripts})
 
 if (LIBMONETRA_INSTALL_EXPORTS)
 	install_exports(LibMonetra "${LIBMONETRA_INSTALL_LOCATION_SHARE}/LibMonetra/cmake" Mstdlib:${Mstdlib_VERSION})

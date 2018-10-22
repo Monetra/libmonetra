@@ -1,6 +1,14 @@
 project(libmonetra C)
 
-# Source files.
+if (LIBMONETRA_STATIC)
+	set(libtype STATIC)
+	set(libdefs PUBLIC LIBMONETRA_STATIC)
+else ()
+	set(libtype SHARED)
+	set(libdefs PRIVATE LIBMONETRA_INTERNAL)
+endif ()
+
+# Build the library.
 set(sources
 	monetra_conn.c
 	monetra_conn_event.c
@@ -12,32 +20,18 @@ set(sources
 	monetra_trans_structure.c
 )
 
-# Build the library.
-if (LIBMONETRA_STATIC)
-	# Static version.
-	add_library(${PROJECT_NAME} STATIC
-		${sources}
-	)
-	target_compile_definitions(${PROJECT_NAME}
-		PUBLIC LIBMONETRA_STATIC
-	)
-	if (LIBMONETRA_STATIC_PIC)
-		set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-	endif ()
-else ()
-	# Shared version.
-	add_library(${PROJECT_NAME} SHARED
-		${sources}
-	)
-	target_compile_definitions(${PROJECT_NAME}
-		PRIVATE LIBMONETRA_INTERNAL
-	)
-	set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-endif ()
+add_library(${PROJECT_NAME} ${libtype}
+	${sources}
+)
 
-# Dependencies and usage requirements.
-target_link_libraries(${PROJECT_NAME}
-	PUBLIC Mstdlib::formats Mstdlib::io Mstdlib::tls
+target_compile_definitions(${PROJECT_NAME}
+	${libdefs}
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+	Mstdlib::tls
+	Mstdlib::io
+	Mstdlib::formats
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -65,7 +59,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # On windows, make a version that uses the stdcall calling convention instead of cdecl.
-if (WIN32)
+if (WIN32 AND NOT LIBMONETRA_STATIC)
 	add_library(${PROJECT_NAME}_stdcall SHARED
 		${sources}
 	)
