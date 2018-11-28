@@ -229,6 +229,7 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 				if (M_queue_len(conn->trans_pending) == 0) {
 					/* Request a graceful disconnect */
 					LM_conn_disconnect_connlocked(conn);
+					conn->status = LM_CONN_STATUS_IDLE_TIMEOUT;
 				}
 			}
 
