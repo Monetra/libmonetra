@@ -143,7 +143,6 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 	LM_conn_t              *conn   = user_arg;
 	M_list_t               *events = NULL;
 	LM_conn_events_entry_t *entry;
-	M_bool                  request_disconnect = M_FALSE;
 	M_bool                  request_connect    = M_FALSE;
 	(void)io; /* we'll use our own io reference in conn */
 
@@ -229,7 +228,7 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 				 * timer shouldn't be running if there are) */
 				if (M_queue_len(conn->trans_pending) == 0) {
 					/* Request a graceful disconnect */
-					request_disconnect = M_TRUE;
+					LM_conn_disconnect_connlocked(conn);
 				}
 			}
 
@@ -268,12 +267,6 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 		request_connect = M_TRUE;
 	}
 	M_thread_mutex_unlock(conn->lock);
-
-	/* Request disconnect was set, trigger it when we're not holding a conn lock */
-	if (request_disconnect) {
-		LM_conn_disconnect(conn);
-		conn->status = LM_CONN_STATUS_IDLE_TIMEOUT;
-	}
 
 	/* Should only happen if new request is enqueued while a disconnect due to idle timeout is processing */
 	if (request_connect) {

@@ -441,6 +441,24 @@ end:
 }
 
 
+M_bool LM_conn_disconnect_connlocked(LM_conn_t *conn)
+{
+	M_bool retval = M_FALSE;
+
+	/* conn is already locked here */
+
+	if (conn->io && conn->status == LM_CONN_STATUS_CONNECTED) {
+		/* This should cause a disconnect signal to be generated at some point
+		 * in the not too distant future */
+		M_io_disconnect(conn->io);
+		conn->status = LM_CONN_STATUS_DISCONNECTING;
+		retval = M_TRUE;
+	}
+
+	return retval;
+}
+
+
 M_bool LM_SPEC LM_conn_disconnect(LM_conn_t *conn)
 {
 	M_bool retval = M_FALSE;
@@ -449,13 +467,7 @@ M_bool LM_SPEC LM_conn_disconnect(LM_conn_t *conn)
 		return M_FALSE;
 
 	M_thread_mutex_lock(conn->lock);
-	if (conn->io && conn->status == LM_CONN_STATUS_CONNECTED) {
-		/* This should cause a disconnect signal to be generated at some point
-		 * in the not too distant future */
-		M_io_disconnect(conn->io);
-		conn->status = LM_CONN_STATUS_DISCONNECTING;
-		retval = M_TRUE;
-	}
+	retval = LM_conn_disconnect_connlocked(conn);
 	M_thread_mutex_unlock(conn->lock);
 
 	return retval;
