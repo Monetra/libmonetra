@@ -65,4 +65,7 @@ typedef enum LM_conn_parse_error LM_conn_parse_error_t;
 
 LM_conn_parse_error_t LM_conn_parse_trans_buffer(LM_conn_t *conn, LM_trans_t **trans);
 
+/* Same as LM_conn_disconnect(), but assumes you're already holding the lock */
+M_bool LM_conn_disconnect_connlocked(LM_conn_t *conn);
+
 #endif
