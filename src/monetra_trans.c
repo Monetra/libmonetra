@@ -97,25 +97,30 @@ void LM_trans_delete_unlocked(LM_trans_t *trans)
 
 void LM_SPEC LM_trans_delete(LM_trans_t *trans)
 {
+	LM_conn_t *conn;
+
 	if (trans == NULL)
 		return;
 
-	M_thread_mutex_lock(trans->conn->lock);
+	conn = trans->conn;
+
+	M_thread_mutex_lock(conn->lock);
 
 	/* Kill user data as a signal its been deleted incase signals are delivered */
 	trans->user_data = NULL;
 
 	/* If we are processing events, we must *delay* cleanup */
-	if (trans->conn->in_use) {
-		M_llist_insert(trans->conn->trans_delay_rm, trans);
-		M_thread_mutex_unlock(trans->conn->lock);
+	if (conn->in_use) {
+		M_llist_insert(conn->trans_delay_rm, trans);
+		M_thread_mutex_unlock(conn->lock);
 		return;
 	}
 
 	LM_trans_delete_unlocked(trans);
 
-	M_thread_mutex_unlock(trans->conn->lock);
+	M_thread_mutex_unlock(conn->lock);
 }
+
 
 M_bool LM_SPEC LM_trans_set_param(LM_trans_t *trans, const char *key, const char *value)
 {
