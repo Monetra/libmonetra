@@ -247,8 +247,12 @@ LM_EXPORT M_bool LM_SPEC LM_init(M_uint64 flags /*!< enum LM_init_flags */);
  *  by the connection error or disconnect event itself.
  *
  *  It is safe to call LM_conn_destroy() or LM_trans_delete() within the callback, however if
- *  there are events still enqueued for the connection, they will not be delivered so it is
- *  recommended to only LM_conn_destroy() on LM_EVENT_CONN_DISCONNECT or LM_EVENT_CONN_ERROR
+ *  there are events still enqueued for a connection when destroyed, they will not be delivered
+ *  so it is recommended to only LM_conn_destroy() on LM_EVENT_CONN_DISCONNECT or LM_EVENT_CONN_ERROR.
+ *
+ *  It is also possible that if LM_trans_delete() is called in the callback that events
+ *  for that transaction may still be delivered for a short time after, but it is guaranteed
+ *  that if that occurs, LM_trans_get_userdata() will return NULL.
  *
  *  \param[in] conn  Connection handle associated with the event
  *  \param[in] event mstdlib event handle that generated the event

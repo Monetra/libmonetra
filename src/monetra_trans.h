@@ -22,6 +22,7 @@ struct LM_trans {
 /* Free the transaction only, don't try to de-register it (used in destructors) */
 void LM_trans_free(LM_trans_t *trans);
 void LM_trans_send_messages(LM_conn_t *conn);
+void LM_trans_delete_unlocked(LM_trans_t *trans);
 
 /* Takes a transaction and writes it to outbuf. Expects conn and trans to be locked. */
 void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans);
