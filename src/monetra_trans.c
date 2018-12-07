@@ -73,14 +73,15 @@ static M_queue_t *LM_trans_get_conn_queue(LM_trans_t *trans)
 	return NULL;
 }
 
-void LM_SPEC LM_trans_delete(LM_trans_t *trans)
+
+void LM_trans_delete_unlocked(LM_trans_t *trans)
 {
 	M_queue_t *queue;
+
 	if (trans == NULL)
 		return;
 
 	/* Detach from connection */
-	M_thread_mutex_lock(trans->conn->lock);
 	queue = LM_trans_get_conn_queue(trans);
 	M_queue_take(queue, trans);
 	M_hash_u64vp_remove(trans->conn->trans_id_map, trans->trans_id, M_TRUE);
@@ -89,9 +90,31 @@ void LM_SPEC LM_trans_delete(LM_trans_t *trans)
 		M_event_timer_reset(trans->conn->timer, trans->conn->idle_timeout * 1000);
 	}
 
-	M_thread_mutex_unlock(trans->conn->lock);
-
 	LM_trans_free(trans);
+
+}
+
+
+void LM_SPEC LM_trans_delete(LM_trans_t *trans)
+{
+	if (trans == NULL)
+		return;
+
+	M_thread_mutex_lock(trans->conn->lock);
+
+	/* Kill user data as a signal its been deleted incase signals are delivered */
+	trans->user_data = NULL;
+
+	/* If we are processing events, we must *delay* cleanup */
+	if (trans->conn->in_use) {
+		M_llist_insert(trans->conn->trans_delay_rm, trans);
+		M_thread_mutex_unlock(trans->conn->lock);
+		return;
+	}
+
+	LM_trans_delete_unlocked(trans);
+
+	M_thread_mutex_unlock(trans->conn->lock);
 }
 
 M_bool LM_SPEC LM_trans_set_param(LM_trans_t *trans, const char *key, const char *value)

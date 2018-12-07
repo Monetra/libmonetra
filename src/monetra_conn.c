@@ -11,7 +11,13 @@ static void LM_conn_trans_destructor(void *arg)
 
 LM_conn_t * LM_SPEC LM_conn_init(M_event_t *event, LM_event_callback_t event_callback, const char *host, M_uint16 port)
 {
-	LM_conn_t *conn;
+	LM_conn_t                     *conn;
+	const struct M_llist_callbacks trans_delay_rm_cb = {
+		NULL, /* equality */
+		NULL, /* duplicate_insert */
+		NULL, /* duplicate_copy */
+		(M_llist_free_func)LM_trans_delete_unlocked
+	};
 
 	LM_init(LM_INIT_NORMAL);
 
@@ -30,7 +36,7 @@ LM_conn_t * LM_SPEC LM_conn_init(M_event_t *event, LM_event_callback_t event_cal
 	conn->trans_pending  = M_queue_create(NULL, LM_conn_trans_destructor);
 	conn->trans_done     = M_queue_create(NULL, LM_conn_trans_destructor);
 	conn->trans_id_map   = M_hash_u64vp_create(16, 75, M_HASH_U64VP_NONE, NULL);
-
+	conn->trans_delay_rm = M_llist_create(&trans_delay_rm_cb, M_LLIST_NONE);
 	conn->outbuf         = M_buf_create();
 	conn->inbuf          = M_parser_create(M_PARSER_FLAG_NONE);
 
@@ -75,6 +81,7 @@ void LM_SPEC LM_conn_destroy(LM_conn_t *conn)
 	M_hash_u64vp_destroy(conn->trans_id_map, M_FALSE);
 	M_buf_cancel(conn->outbuf);
 	M_parser_destroy(conn->inbuf);
+	M_llist_destroy(conn->trans_delay_rm, M_TRUE);
 	M_free(conn->host);
 	M_free(conn);
 }
