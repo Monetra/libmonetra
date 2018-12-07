@@ -24,6 +24,8 @@ struct LM_conn {
 	M_tls_clientctx_t          *tlsctx;         /*!< TLS client CTX/state */
 	M_dns_t                    *dns;            /*!< DNS instance */
 	M_bool                      in_use;         /*!< Connection object is in use processing events, cannot be destroyed */
+	M_llist_t                  *trans_delay_rm; /*!< List of transactions to delay deleting due to "in_use" */
+
 	M_bool                      destroy;        /*!< A deferred destroy request while processing events */
 
 	M_buf_t                    *outbuf;         /*!< Data meant to go on the wire to Monetra */

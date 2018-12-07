@@ -259,6 +259,16 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 
 	/* Untag the connection as in-use. Check to see if we need to reconnect. */
 	M_thread_mutex_lock(conn->lock);
+
+	/* Now we need to kill transaction pointers that were LM_trans_delete()'d while we were
+	 * processing events, that we had to delay. */
+	if (M_llist_len(conn->trans_delay_rm)) {
+		M_llist_node_t *next;
+		while ((next = M_llist_first(conn->trans_delay_rm)) != NULL)
+			M_llist_remove_node(next);
+	}
+
+
 	conn->in_use = M_FALSE;
 	/* Looks like we had disconnected due to an idle timeout, then before the connection was
 	 * fully brought down (since we do this gracefully which could take a little time),
