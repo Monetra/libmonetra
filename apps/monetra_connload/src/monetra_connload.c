@@ -44,13 +44,13 @@ static M_bool cli_integer_cb(char short_opt, const char *long_opt, M_int64 *inte
 	M_uint64       val;
 	(void)thunk;
 	(void)long_opt;
-	
+
 	/* Note: all integer args to this program are required to be non-negative. */
 	if (integer == NULL || *integer < 0) {
 		return M_FALSE;
 	}
 	val = (M_uint64)*integer;
-	
+
 	switch (short_opt) {
 		case 'p':
 			if (val > M_UINT16_MAX) {
@@ -85,13 +85,13 @@ static M_bool cli_integer_cb(char short_opt, const char *long_opt, M_int64 *inte
 
 
 static M_bool cli_string_cb(char short_opt, const char *long_opt, const char *string, void *thunk)
-{	
+{
 	(void)long_opt;
 	(void)thunk;
 	if (M_str_isempty(string)) {
 		return M_FALSE;
 	}
-	
+
 	switch (short_opt) {
 		case 'U':
 			M_str_cpy(config_username, sizeof(config_username), string);
@@ -105,7 +105,7 @@ static M_bool cli_string_cb(char short_opt, const char *long_opt, const char *st
 		default:
 			return M_FALSE;
 	}
-	
+
 	return M_TRUE;
 }
 
@@ -114,14 +114,14 @@ static void usage(const char *argv0, M_getopt_t *g)
 {
 	char *bname = M_fs_path_basename(argv0, M_FS_SYSTEM_AUTO);
 	char *help  = M_getopt_help(g);
-	
+
 	M_printf("Usage:\r\n");
 	M_printf("  %s [options]\r\n\r\n", bname);
 	M_printf("Parameter Descriptions:\r\n");
 	M_printf("%s\r\n", help);
 	M_printf("Example:\r\n");
 	M_printf("  %s -U loopback -P test123 -H testbox.monetra.com -p 8665 -t 100 -d 1000 -c 1000\r\n\r\n", bname);
-	
+
 	M_free(help);
 	M_free(bname);
 }
@@ -133,7 +133,7 @@ static M_bool read_cmdline(int argc, const char *const *argv)
 	const char       *fail     = "?";
 	M_getopt_error_t  ret;
 	char              tmp[512];
-	
+
 	/* Add individual options and help descriptions. */
 	/*     -- string parameters -- */
 	M_snprintf(tmp, sizeof(tmp), "username          : defaults to '%s'", config_username);
@@ -157,11 +157,11 @@ static M_bool read_cmdline(int argc, const char *const *argv)
 
 	/* Parse the command line options. */
 	ret = M_getopt_parse(g, argv, argc, &fail, NULL);
-	
+
 	/* Handle parsing errors or a request to print help. */
 	if (ret != M_GETOPT_ERROR_SUCCESS) {
 		const char *err_type_desc = NULL;
-		
+
 		switch (ret) {
 			case M_GETOPT_ERROR_SUCCESS:
 				break;
@@ -181,16 +181,16 @@ static M_bool read_cmdline(int argc, const char *const *argv)
 				err_type_desc = "Error -- ";
 				break;
 		}
-		
+
 		/* If we're aborting due to an error, print error message. */
 		if (err_type_desc != NULL) {
 			M_printf("Aborted - problem with command line arguments:\n");
 			M_printf("   %s%s\n\n", err_type_desc, fail);
 		}
-		
+
 		/* Print help. */
 		usage(argv[0], g);
-		
+
 		M_getopt_destroy(g);
 		return M_FALSE;
 	}
@@ -284,7 +284,7 @@ static void create_connection(M_event_t *event)
 static void monetra_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t type, LM_trans_t *trans)
 {
 	conn_private_t *priv = LM_conn_get_userdata(conn);
-	
+
 	switch (type) {
 		case LM_EVENT_CONN_CONNECTED:
 			track_num_connections++;
@@ -328,6 +328,7 @@ static void monetra_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t 
 			break;
 		case LM_EVENT_TRANS_ERROR:
 		case LM_EVENT_TRANS_NOCONNECT:
+		case LM_EVENT_TRANS_TIMEOUT:
 			/* We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup. */
 			break;
 	}
@@ -344,7 +345,7 @@ typedef enum {
 static void vt100_cmd(VT100_CMDS cmd)
 {
 	static const char ascii_esc = 27;
-	
+
 	switch (cmd) {
 		case VT100_CMD_SAVEPOS:
 			M_printf("%c7", ascii_esc);
@@ -410,11 +411,11 @@ int main(int argc, const char *const *argv)
 #if defined(_WIN32) && defined(M_HAS_VT100)
 	HANDLE          h_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD           dw_mode  = 0;
-	
+
 	GetConsoleMode(h_stdout, &dw_mode);
 	SetConsoleMode(h_stdout, dw_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif /* _WIN32 && M_HAS_VT100 */
-	
+
 	M_printf("Connection Load Script v%s\r\n", VERSION);
 
 	if (!read_cmdline(argc, argv))

@@ -83,7 +83,7 @@ typedef struct {
 static cli_options_t *cli_options_create(void)
 {
 	cli_options_t *opt = M_malloc_zero(sizeof(*opt));
-	
+
 	opt->username     = M_strdup("loopback");
 	opt->password     = M_strdup("test123");
 	opt->hostname     = M_strdup("localhost");
@@ -150,10 +150,10 @@ static char *GetCCNumber(cli_options_t *opt)
 static M_bool cli_bool_cb(char short_opt, const char *long_opt, M_bool boolean, void *thunk)
 {
 	cli_options_t *opt = (cli_options_t*)thunk;
-	
+
 	(void)long_opt;
 	(void)boolean;
-	
+
 	if (opt == NULL) {
 		return M_FALSE;
 	}
@@ -183,7 +183,7 @@ static M_bool cli_bool_cb(char short_opt, const char *long_opt, M_bool boolean, 
 		default:
 			return M_FALSE;
 	}
-	
+
 	return M_TRUE;
 }
 
@@ -192,15 +192,15 @@ static M_bool cli_integer_cb(char short_opt, const char *long_opt, M_int64 *inte
 {
 	cli_options_t *opt = (cli_options_t*)thunk;
 	M_uint64       val;
-	
+
 	(void)long_opt;
-	
+
 	/* Note: all integer args to this program are required to be non-negative. */
 	if (opt == NULL || integer == NULL || *integer < 0) {
 		return M_FALSE;
 	}
 	val = (M_uint64)*integer;
-	
+
 	switch (short_opt) {
 		case 'p':
 			if (val > M_UINT16_MAX) {
@@ -246,13 +246,13 @@ static M_bool cli_decimal_cb(char short_opt, const char *long_opt, M_decimal_t *
 {
 	cli_options_t *opt    = (cli_options_t*)thunk;
 	M_int64        decval;
-	
+
 	(void)long_opt;
-	
+
 	if (opt == NULL || decimal == NULL) {
 		return M_FALSE;
 	}
-	
+
 	switch (short_opt) {
 		case 'A':
 			decval = M_decimal_to_int(decimal, 2);
@@ -275,7 +275,7 @@ static M_bool cli_decimal_cb(char short_opt, const char *long_opt, M_decimal_t *
 		default:
 			return M_FALSE;
 	}
-	
+
 	return M_TRUE;
 }
 
@@ -283,13 +283,13 @@ static M_bool cli_decimal_cb(char short_opt, const char *long_opt, M_decimal_t *
 static M_bool cli_string_cb(char short_opt, const char *long_opt, const char *string, void *thunk)
 {
 	cli_options_t *opt = (cli_options_t*)thunk;
-	
+
 	(void)long_opt;
-	
+
 	if (opt == NULL || M_str_isempty(string)) {
 		return M_FALSE;
 	}
-	
+
 	switch (short_opt) {
 		case 'U':
 			M_free(opt->username);
@@ -344,7 +344,7 @@ static M_bool cli_string_cb(char short_opt, const char *long_opt, const char *st
 		default:
 			return M_FALSE;
 	}
-	
+
 	return M_TRUE;
 }
 
@@ -353,14 +353,14 @@ static void usage(const char *argv0, M_getopt_t *g)
 {
 	char *bname = M_fs_path_basename(argv0, M_FS_SYSTEM_AUTO);
 	char *help  = M_getopt_help(g);
-	
+
 	M_printf("Usage:\r\n");
 	M_printf("  %s [options]\r\n\r\n", bname);
 	M_printf("Parameter Descriptions:\r\n");
 	M_printf("%s\r\n", help);
 	M_printf("Example:\r\n");
 	M_printf("  %s -U loopback -P test123 -H testbox.monetra.com -p 8444 -t 10000 -x 50\r\n\r\n", bname);
-	
+
 	M_free(help);
 	M_free(bname);
 }
@@ -373,7 +373,7 @@ static cli_options_t *read_cmdline(int argc, const char *const *argv)
 	const char       *fail     = "?";
 	M_getopt_error_t  ret;
 	char              tmp[512];
-	
+
 	/* Add individual options and help descriptions. */
 	/*     -- string parameters -- */
 	M_snprintf(tmp, sizeof(tmp), " username     : defaults to '%s'", opt->username);
@@ -397,13 +397,13 @@ static cli_options_t *read_cmdline(int argc, const char *const *argv)
 	M_getopt_addstring(g, 's', NULL, M_TRUE, tmp, cli_string_cb);
 	M_snprintf(tmp, sizeof(tmp), " zipcode      : defaults to '%s'", opt->zip);
 	M_getopt_addstring(g, 'z', NULL, M_TRUE, tmp, cli_string_cb);
-	
+
 	/*     -- decimal parameters -- */
 	M_snprintf(tmp, sizeof(tmp), "max amount   : defaults to '%llu.%02llu", opt->max_amount/100, opt->max_amount%100);
 	M_getopt_adddecimal(g, 'A', NULL, M_TRUE, tmp, cli_decimal_cb);
 	M_snprintf(tmp, sizeof(tmp), "exact amount : use only a single amount, instead of a random one");
 	M_getopt_adddecimal(g, 'e', NULL, M_TRUE, tmp, cli_decimal_cb);
-	
+
 	/*     -- integer parameters -- */
 	M_snprintf(tmp, sizeof(tmp), "port         : defaults to '%d'", (int)opt->port);
 	M_getopt_addinteger(g, 'p', NULL, M_TRUE, tmp, cli_integer_cb);
@@ -416,7 +416,7 @@ static cli_options_t *read_cmdline(int argc, const char *const *argv)
 	M_getopt_addinteger(g, 'u', NULL, M_TRUE, tmp, cli_integer_cb);
 	M_snprintf(tmp, sizeof(tmp), "admin port   : defaults to '%d'\r\n", (int)opt->admin_port);
 	M_getopt_addinteger(g, 'a', NULL, M_TRUE, tmp, cli_integer_cb);
-	
+
 	/*     -- option flags -- */
 	M_getopt_addboolean(g, 'f', NULL, M_FALSE, ": issue forces instead of sales", cli_bool_cb);
 	M_getopt_addboolean(g, 'r', NULL, M_FALSE, ": issue preauths instead of sales", cli_bool_cb);
@@ -428,14 +428,14 @@ static cli_options_t *read_cmdline(int argc, const char *const *argv)
 	M_getopt_addboolean(g, 'S', NULL, M_FALSE, ": settle outstanding transactions (for all users if usercount is set)",
 		cli_bool_cb);
 	M_getopt_addboolean(g, 'h', NULL, M_FALSE, ": displays help message", cli_bool_cb);
-	
+
 	/* Parse the command line options. */
 	ret = M_getopt_parse(g, argv, argc, &fail, opt);
-	
+
 	/* Handle parsing errors or a request to print help. */
 	if (ret != M_GETOPT_ERROR_SUCCESS || opt->help) {
 		const char *err_type_desc = NULL;
-		
+
 		switch (ret) {
 			case M_GETOPT_ERROR_SUCCESS:
 				break;
@@ -455,28 +455,28 @@ static cli_options_t *read_cmdline(int argc, const char *const *argv)
 				err_type_desc = "Error -- ";
 				break;
 		}
-		
+
 		/* If we're aborting due to an error, print error message. */
 		if (err_type_desc != NULL) {
 			M_printf("Aborted - problem with command line arguments:\n");
 			M_printf("   %s%s\n\n", err_type_desc, fail);
 		}
-		
+
 		/* Print help. */
 		usage(argv[0], g);
-		
+
 		cli_options_destroy(opt);
 		M_getopt_destroy(g);
 		return NULL;
 	}
-	
+
 	/* If trackdata is set, use it instead of the listed accounts. */
 	if (!M_str_isempty(opt->trackdata)) {
 		M_str_explode_free(opt->accounts, opt->num_accounts);
 		opt->accounts     = NULL;
 		opt->num_accounts = 0;
 	}
-	
+
 	M_getopt_destroy(g);
 	return opt;
 }
@@ -510,7 +510,7 @@ static void print_config(const cli_options_t *opt)
 		"  Card Numbers     : ",
 		opt->hostname, (int)opt->port, opt->user_count,
 		(opt->user_count > 0 && opt->user_create)?  "yes" : "no",
-		(opt->user_count > 0 && opt->user_cleanup)? "yes" : "no", 
+		(opt->user_count > 0 && opt->user_cleanup)? "yes" : "no",
 		(opt->user_count > 0 && opt->user_settle)?  "yes" : "no",
 		opt->username, (opt->method == METHOD_IP)? "IP" : "SSL", opt->num_trans, opt->num_conns,
 		(double)opt->exact_amount / 100.00, (double)opt->max_amount / 100.00, opt->street, opt->zip,
@@ -530,7 +530,7 @@ static void print_config(const cli_options_t *opt)
 static void monetra_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t type, LM_trans_t *trans)
 {
 	cli_options_t *opt = LM_conn_get_userdata(conn);
-	
+
 	switch (type) {
 		case LM_EVENT_CONN_CONNECTED:
 			connections_established++;
@@ -565,6 +565,9 @@ static void monetra_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t 
 		case LM_EVENT_TRANS_NOCONNECT:
 			/* We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup. */
 			break;
+		case LM_EVENT_TRANS_TIMEOUT:
+			/* Ignore */
+			break;
 	}
 }
 
@@ -579,7 +582,7 @@ typedef enum {
 static void vt100_cmd(VT100_CMDS cmd)
 {
 	static const char ascii_esc = 27;
-	
+
 	switch (cmd) {
 		case VT100_CMD_SAVEPOS:
 			M_printf("%c7", ascii_esc);
@@ -669,7 +672,7 @@ static void enqueue_tran(LM_conn_t *conn, M_uint64 ptrannum, cli_options_t *opt)
 		LM_trans_set_param(trans, "expdate", opt->expdate);
 	}
 	if (!M_str_isempty(opt->trackdata)) {
-		LM_trans_set_param(trans, (M_str_isempty(opt->ksn)) ? "trackdata" : "e_trackdata", opt->trackdata); 
+		LM_trans_set_param(trans, (M_str_isempty(opt->ksn)) ? "trackdata" : "e_trackdata", opt->trackdata);
 	}
 	if (!M_str_isempty(opt->ksn)) {
 		LM_trans_set_param(trans, "e_id", opt->ksn);
@@ -696,7 +699,7 @@ static LM_conn_t **start_connections(M_event_t *event, size_t num, M_bool is_adm
 
 	conns     = M_malloc_zero(sizeof(*conns) * num);
 	tlsctx    = M_tls_clientctx_create();
-	
+
 	M_tls_clientctx_set_default_trust(tlsctx);
 	M_tls_clientctx_set_verify_level(tlsctx, M_TLS_VERIFY_NONE);
 	opt->expected_connections = num;
@@ -948,11 +951,11 @@ int main(int argc, const char *const *argv)
 #if defined(_WIN32) && defined(M_HAS_VT100)
 	HANDLE          h_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD           dw_mode  = 0;
-	
+
 	GetConsoleMode(h_stdout, &dw_mode);
 	SetConsoleMode(h_stdout, dw_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif /* _WIN32 && M_HAS_VT100 */
-	
+
 	M_printf("Load Script v%s\r\n", VERSION);
 
 	opt = read_cmdline(argc, argv);

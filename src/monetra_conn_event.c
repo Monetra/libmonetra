@@ -95,6 +95,12 @@ static void LM_conn_event_handle_conn_error(M_list_t **events, LM_conn_t *conn, 
 		M_hash_dict_insert(trans->response_params, "code", "DENY");
 		M_hash_dict_insert(trans->response_params, "verbiage", conn->error);
 
+		/* In error state, kill timer */
+		if (trans->timeout_timer) {
+			M_event_timer_remove(trans->timeout_timer);
+			trans->timeout_timer = NULL;
+		}
+
 		M_thread_mutex_unlock(trans->lock);
 		LM_conn_event_add(events, LM_EVENT_TRANS_ERROR, trans);
 	}
@@ -138,13 +144,11 @@ static void LM_conn_event_set_connected(M_event_t *event, LM_conn_t *conn, M_lis
 }
 
 
-void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg)
+static void LM_conntrans_event_handler(M_event_t *event, M_event_type_t type, LM_conn_t *conn, LM_trans_t *event_trans)
 {
-	LM_conn_t              *conn   = user_arg;
 	M_list_t               *events = NULL;
 	LM_conn_events_entry_t *entry;
 	M_bool                  request_connect    = M_FALSE;
-	(void)io; /* we'll use our own io reference in conn */
 
 	M_thread_mutex_lock(conn->lock);
 	conn->in_use = M_TRUE;
@@ -188,6 +192,15 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 						LM_conn_event_set_connected(event, conn, &events);
 					} else {
 						LM_conn_event_add(&events, LM_EVENT_TRANS_DONE, trans);
+
+						M_thread_mutex_lock(trans->lock);
+						/* Can't fire timeout, transaction is done */
+						if (trans->timeout_timer) {
+							M_event_timer_remove(trans->timeout_timer);
+							trans->timeout_timer = NULL;
+						}
+						M_thread_mutex_unlock(trans->lock);
+
 					}
 				}
 
@@ -216,27 +229,36 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 		case M_EVENT_TYPE_OTHER:
 			/* Used for Timers */
 
-			if (conn->status == LM_CONN_STATUS_CONNECTING) {
-				/* When in the connecting state, the timer only gets fired on a timeout of a PING operation.
-				 * That means we need to treat this as a connection error  */
-				LM_conn_cleanup_ping(conn);
-				M_snprintf(conn->error, sizeof(conn->error), "Failed to receive reply to PING request");
-				LM_conn_event_handle_conn_error(&events, conn, M_EVENT_TYPE_ERROR);
-			} else if (conn->status == LM_CONN_STATUS_CONNECTED) {
-				/* If we're connected an we get a timer event, that means we hit an idle connection timeout.
-				 * we need to trigger a disconnect (but verify there are no pending transactions, the
-				 * timer shouldn't be running if there are) */
-				if (M_queue_len(conn->trans_pending) == 0) {
-					/* Request a graceful disconnect */
-					LM_conn_disconnect_connlocked(conn);
-					conn->status = LM_CONN_STATUS_IDLE_TIMEOUT;
+			/* If event_trans is not NULL, then the only thing this could be is a transaction timeout */
+			if (event_trans != NULL) {
+				LM_conn_event_add(&events, LM_EVENT_TRANS_TIMEOUT, event_trans);
+				M_thread_mutex_lock(event_trans->lock);
+				M_event_timer_remove(event_trans->timeout_timer);
+				event_trans->timeout_timer = NULL;
+				M_thread_mutex_unlock(event_trans->lock);
+			} else {
+				if (conn->status == LM_CONN_STATUS_CONNECTING) {
+					/* When in the connecting state, the timer only gets fired on a timeout of a PING operation.
+					 * That means we need to treat this as a connection error  */
+					LM_conn_cleanup_ping(conn);
+					M_snprintf(conn->error, sizeof(conn->error), "Failed to receive reply to PING request");
+					LM_conn_event_handle_conn_error(&events, conn, M_EVENT_TYPE_ERROR);
+				} else if (conn->status == LM_CONN_STATUS_CONNECTED) {
+					/* If we're connected an we get a timer event, that means we hit an idle connection timeout.
+					 * we need to trigger a disconnect (but verify there are no pending transactions, the
+					 * timer shouldn't be running if there are) */
+					if (M_queue_len(conn->trans_pending) == 0) {
+						/* Request a graceful disconnect */
+						LM_conn_disconnect_connlocked(conn);
+						conn->status = LM_CONN_STATUS_IDLE_TIMEOUT;
+					}
 				}
-			}
 
-			/* Clean up the timer if it hasn't been cleaned up already */
-			if (conn->timer != NULL) {
-				M_event_timer_remove(conn->timer);
-				conn->timer = NULL;
+				/* Clean up the timer if it hasn't been cleaned up already */
+				if (conn->timer != NULL) {
+					M_event_timer_remove(conn->timer);
+					conn->timer = NULL;
+				}
 			}
 			break;
 
@@ -292,11 +314,28 @@ void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, vo
 }
 
 
+void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg)
+{
+	LM_conn_t *conn   = user_arg;
+	(void)io;
+	LM_conntrans_event_handler(event, type, conn, NULL);
+}
+
+
+void LM_trans_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg)
+{
+	LM_trans_t *trans = user_arg;
+	LM_conn_t  *conn  = trans->conn;
+	(void)io;
+	LM_conntrans_event_handler(event, type, conn, trans);
+}
+
+
 void LM_conn_event_handler_writetrigger(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg)
 {
 	LM_conn_t *conn = user_arg;
 	(void)type;
 	(void)io;
 	/* Just use our normal event handler, but rewrite to a WRITE event */
-	LM_conn_event_handler(event, M_EVENT_TYPE_WRITE, conn->io, user_arg);
+	LM_conntrans_event_handler(event, M_EVENT_TYPE_WRITE, conn, NULL);
 }

@@ -33,7 +33,7 @@ void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
 /* If connected, move all transactions from 'ready' queue to 'pending' queue
  * and structure request message and place in outbuf.  If outbuf was not empty
  * prior to calling, also write out the io, otherwise assume we'll get a signal.
- * 
+ *
  * NOTE: LM_conn_t must be locked before calling this
  */
 void LM_trans_send_messages(LM_conn_t *conn)
@@ -60,6 +60,10 @@ void LM_trans_send_messages(LM_conn_t *conn)
 		M_thread_mutex_lock(trans->lock);
 		trans->status = LM_TRANS_STATUS_PENDING;
 		LM_trans_structure(conn, trans);
+		if (trans->timeout_s) {
+			/* Start timer to notify of idle timeout */
+			trans->timeout_timer = M_event_timer_oneshot(M_io_get_event(conn->io) , trans->timeout_s * 1000, M_FALSE, LM_trans_event_handler, trans);
+		}
 		M_thread_mutex_unlock(trans->lock);
 		M_queue_insert(conn->trans_pending, trans);
 	}

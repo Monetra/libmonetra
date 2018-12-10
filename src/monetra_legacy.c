@@ -51,6 +51,9 @@ static void M_legacy_event_callback(LM_conn_t *conn, M_event_t *event, LM_event_
 			 * just polls for status */
 			M_event_return(event);
 			break;
+		case LM_EVENT_TRANS_TIMEOUT:
+			/* Ignore this, doesn't change any state */
+			break;
 	}
 }
 

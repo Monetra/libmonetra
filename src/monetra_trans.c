@@ -109,6 +109,12 @@ void LM_SPEC LM_trans_delete(LM_trans_t *trans)
 	/* Kill user data as a signal its been deleted incase signals are delivered */
 	trans->user_data = NULL;
 
+	/* Kill idle timer */
+	if (trans->timeout_timer) {
+		M_event_timer_remove(trans->timeout_timer);
+		trans->timeout_timer = NULL;
+	}
+
 	/* If we are processing events, we must *delay* cleanup */
 	if (conn->in_use) {
 		M_llist_insert(conn->trans_delay_rm, trans);
@@ -154,6 +160,26 @@ M_bool LM_SPEC LM_trans_set_param_binary(LM_trans_t *trans, const char *key, con
 	M_free(b64);
 
 	return retval;
+}
+
+
+M_bool LM_SPEC LM_trans_set_timeout(LM_trans_t *trans, M_uint64 timeout_s)
+{
+	M_bool rv = M_TRUE;
+
+	if (trans == NULL)
+		return M_FALSE;
+
+	M_thread_mutex_lock(trans->lock);
+
+	if (trans->status != LM_TRANS_STATUS_NEW) {
+		rv = M_FALSE;
+	} else {
+		trans->timeout_s = timeout_s;
+	}
+	M_thread_mutex_unlock(trans->lock);
+
+	return rv;
 }
 
 

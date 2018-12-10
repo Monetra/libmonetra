@@ -59,7 +59,10 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 		case LM_EVENT_TRANS_NOCONNECT:
 			M_printf("Transaction %p error (connectivity): %s\n", trans, LM_conn_error(conn));
 			LM_trans_delete(trans);
-			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup. 
+			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup.
+			break;
+		case LM_EVENT_TRANS_TIMEOUT:
+			/* Ignore */
 			break;
 	}
 }

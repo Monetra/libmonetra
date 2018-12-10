@@ -52,6 +52,8 @@ struct LM_conn {
 
 /*! General event handler */
 void LM_conn_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg);
+void LM_trans_event_handler(M_event_t *event, M_event_type_t type, M_io_t *io, void *user_arg);
+
 
 /*! Event handler specific to requesting a fake write event used for aggregating multiple
  *  transaction writes into one */

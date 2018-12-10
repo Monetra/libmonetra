@@ -16,6 +16,9 @@ struct LM_trans {
 	char                     *response_raw;    /*!< Raw response data if not key/value pair */
 	M_csv_t                  *response_csv;    /*!< Parsed CSV response data */
 
+	M_uint64                  timeout_s;       /*!< Seconds to wait until LM_EVENT_TRANS_TIMEOUT is emitted */
+	M_event_timer_t          *timeout_timer;   /*!< Timer tracking timeout */
+
 	void                     *user_data;       /*!< User specified data, custom tracking parameter */
 };
 

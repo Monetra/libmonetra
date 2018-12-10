@@ -151,6 +151,9 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 			M_printf("Transaction %s error (connectivity): %s\n", identifier, LM_conn_error(conn));
 			LM_trans_delete(trans);
 			break;
+		case LM_EVENT_TRANS_TIMEOUT:
+			/* ignore */
+			break;
 	}
 
 	M_free(identifier);
@@ -167,7 +170,7 @@ static M_bool setup_ssl_ctx(cli_trans_t *trans, M_tls_clientctx_t *ctx, char *er
 
 	M_tls_clientctx_set_default_trust(ctx);
 	if (!M_str_isempty(trans->cadir)) {
-		if (!M_tls_clientctx_set_trust_ca_dir(ctx, trans->cadir)) { 
+		if (!M_tls_clientctx_set_trust_ca_dir(ctx, trans->cadir)) {
 			M_snprintf(error, errlen, "Could not add trust CA directory\n");
 			return M_FALSE;
 		}

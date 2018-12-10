@@ -22,7 +22,7 @@ extern "C" {
  *
  *  \code{.c}
  *  #include <monetra_api.h>
- *  
+ *
  *  static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t type, LM_trans_t *trans)
  *  {
  *  	M_list_str_t *params;
@@ -53,15 +53,20 @@ extern "C" {
  *  			LM_conn_disconnect(conn);
  *  			break;
  *
+ *  		case LM_EVENT_TRANS_TIMEOUT:
+ *  			M_printf("\tTransaction %p timed out\n", trans);
+ *  			// Transaction will actually stay enqueued and may later return LM_EVENT_TRANS_DONE.
+ *  			break;
+ *
  *  		case LM_EVENT_TRANS_ERROR:
  *  		case LM_EVENT_TRANS_NOCONNECT:
  *  			M_printf("Transaction %p error (connectivity): %s\n", trans, LM_conn_error(conn));
  *  			LM_trans_delete(trans);
- *  			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup. 
+ *  			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup.
  *  			break;
  *  	}
  *  }
- *  
+ *
  *  int main(int argc, char **argv)
  *  {
  *  	M_event_t *event    = M_event_create(M_EVENT_FLAG_NONE);
@@ -69,7 +74,7 @@ extern "C" {
  *  	LM_trans_t *trans;
  *
  *  	LM_conn_connect(conn);
- *  
+ *
  *  	trans = LM_trans_new(conn);
  *  	LM_trans_set_param(trans, "username", "test_retail:public");
  *  	LM_trans_set_param(trans, "password", "publ1ct3st");
@@ -143,7 +148,7 @@ enum LM_event_type {
 	LM_EVENT_CONN_DISCONNECT = 0x02,  /*!< Graceful remote disconnect. No more events will
 	                                   *   arrive after this unless the user requests
 	                                   *   connection re-establishment                   */
-	LM_EVENT_CONN_ERROR      = 0x03,  /*!< Communications error.  No more events will    
+	LM_EVENT_CONN_ERROR      = 0x03,  /*!< Communications error.  No more events will
 	                                   *   arrive after this unless the user requests
 	                                   *   connection re-establishment                   */
 	/* Transaction-related events */
@@ -151,13 +156,17 @@ enum LM_event_type {
 	LM_EVENT_TRANS_ERROR     = 0x11,  /*!< Transaction Error (e.g. comms failed).        *
 	                                   *    Guaranteed to receive a LM_EVENT_CONN_ERROR  *
 	                                   *    after all transactions are notified          */
-	LM_EVENT_TRANS_NOCONNECT = 0x12   /*!< Notification that the transaction is still
+	LM_EVENT_TRANS_NOCONNECT = 0x12,  /*!< Notification that the transaction is still
 	                                   *   ready to be sent, but there was an attempt to
 	                                   *   connect that failed.  This transaction is still
 	                                   *   eligible to be sent if/when a successful connection
 	                                   *   is established.  Integrators may wish to use this
 	                                   *   event to destroy the transaction object if they
 	                                   *   consider this a critical failure.             */
+	LM_EVENT_TRANS_TIMEOUT   = 0x13   /*!< Notification that the user-specified transaction
+	                                   *   timeout has elapsed.  The user may choose to
+	                                   *   ignore this and continue waiting for a final
+	                                   *   event, or clean up the transaction. */
 };
 typedef enum LM_event_type LM_event_type_t;
 
@@ -219,7 +228,7 @@ typedef enum LM_trans_response_type LM_trans_response_type_t;
  * @{
  */
 
-/*! Library Initialization.  
+/*! Library Initialization.
  *
  *  Optional, only use if need to make changes from default.
  *  Must be called before any other LM_*() calls if used.  Can be cleaned up using
@@ -254,7 +263,7 @@ LM_EXPORT M_bool LM_SPEC LM_init(M_uint64 flags /*!< enum LM_init_flags */);
  *  for that transaction may still be delivered for a short time after, but it is guaranteed
  *  that if that occurs, the passed in trans pointer will still be valid as actual destruction
  *  will be delayed, but LM_trans_get_userdata() will return NULL (even if LM_trans_set_userdata()
- *  had previously set it to a valid pointer). 
+ *  had previously set it to a valid pointer).
  *
  *  \param[in] conn  Connection handle associated with the event
  *  \param[in] event mstdlib event handle that generated the event
@@ -266,7 +275,7 @@ LM_EXPORT M_bool LM_SPEC LM_init(M_uint64 flags /*!< enum LM_init_flags */);
 typedef void (*LM_event_callback_t)(LM_conn_t *conn, M_event_t *event, LM_event_type_t type, LM_trans_t *trans);
 
 /*! Initialize a connection object.
- * 
+ *
  *  A connection object must be created before any transactions can be created.  It requires
  *  an initialized mstdlib event handle to be passed to it, which it will use for all
  *  communication/io events.  It also requies a user-written event callback to be registered
@@ -275,7 +284,7 @@ typedef void (*LM_event_callback_t)(LM_conn_t *conn, M_event_t *event, LM_event_
  *  The default connection mode is SSL/TLS and will create a private TLS client ctx unless
  *  one is provided via LM_conn_set_tls_clientctx().  The default ctx will perform strict
  *  server certificate validation.
- * 
+ *
  *  \param[in] event           Initialized mstdlib event handle
  *  \param[in] event_callback  User-supplied callback to call on connection and transaction
  *                             state changes.
@@ -317,7 +326,7 @@ LM_EXPORT void * LM_SPEC LM_conn_get_userdata(LM_conn_t *conn);
 LM_EXPORT void LM_SPEC LM_conn_disable_ping(LM_conn_t *conn);
 
 
-/*! Destroy the connection object. 
+/*! Destroy the connection object.
  *
  *  Destroying a connection object will also destroy any transaction objects associated
  *  with the connection.  Those transaction object pointers MUST NOT be used after the
@@ -333,8 +342,8 @@ LM_EXPORT void LM_SPEC LM_conn_disable_ping(LM_conn_t *conn);
 LM_EXPORT void LM_SPEC LM_conn_destroy(LM_conn_t *conn);
 
 /*! Change the server associated with the connection.
- * 
- *  The connection is only allowed to be changed when is in the DISCONNECTED or 
+ *
+ *  The connection is only allowed to be changed when is in the DISCONNECTED or
  *  DISCONNECTING state.
  *
  *  \param[in] conn Initialized connection object.
@@ -345,8 +354,8 @@ LM_EXPORT void LM_SPEC LM_conn_destroy(LM_conn_t *conn);
 LM_EXPORT M_bool LM_SPEC LM_conn_change_server(LM_conn_t *conn, const char *host, M_uint16 port);
 
 /*! Change the mode of communication with the server.
- * 
- *  The connection is only allowed to be changed when is in the DISCONNECTED or 
+ *
+ *  The connection is only allowed to be changed when is in the DISCONNECTED or
  *  DISCONNECTING state.
  *
  *  \param[in] conn Initialized connection object.
@@ -388,7 +397,7 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_tls_clientctx(LM_conn_t *conn, const M_tls_
 
 /*! Configure a client certificate to present to the server during negotiation from a memory
  *  buffer.
- * 
+ *
  *  Setting a certificate allows for mutual authentication before a connection can be
  *  established.  The server must be configured to support this.
  *
@@ -401,9 +410,9 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_tls_clientctx(LM_conn_t *conn, const M_tls_
  */
 LM_EXPORT M_bool LM_SPEC LM_conn_set_tls_cert(LM_conn_t *conn, const char *key, size_t key_len, const char *crt, size_t crt_len);
 
-/*! Configure a client certificate to present to the server during negotiation from a 
+/*! Configure a client certificate to present to the server during negotiation from a
  *  file.
- * 
+ *
  *  Setting a certificate allows for mutual authentication before a connection can be
  *  established.  The server must be configured to support this.
  *
@@ -414,9 +423,9 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_tls_cert(LM_conn_t *conn, const char *key, 
  */
 LM_EXPORT M_bool LM_SPEC LM_conn_set_tls_cert_files(LM_conn_t *conn, const char *keypath, const char *crtpath);
 
-/*! Callback registered via LM_conn_set_iocreate_callback() that is called when a new 
+/*! Callback registered via LM_conn_set_iocreate_callback() that is called when a new
  *  mstdlib io object is created so the user may manipulate the object.
- * 
+ *
  *  \param[in]  conn  Pointer to the LM_conn_t object
  *  \param[in]  io    Pointer to the M_io_t internal mstdlib object
  *  \param[in]  arg   User-defined argument registered with callback */
@@ -461,7 +470,7 @@ LM_EXPORT M_bool LM_SPEC LM_conn_set_idle_timeout(LM_conn_t *conn, size_t to_sec
  */
 LM_EXPORT const char * LM_SPEC LM_conn_error(LM_conn_t *conn);
 
-/*! Start a connection sequence. 
+/*! Start a connection sequence.
  *
  *  This function is non-blocking, it will return success immediately and initiate a
  *  background connection process.  The user-supplied callback during initialization
@@ -488,7 +497,7 @@ LM_EXPORT M_bool LM_SPEC LM_conn_connect(LM_conn_t *conn);
  */
 LM_EXPORT LM_conn_status_t LM_SPEC LM_conn_status(LM_conn_t *conn);
 
-/*! Issues a graceful disconnect from the server. 
+/*! Issues a graceful disconnect from the server.
  *
  *  This is a non-blocking function call which will start a background disconnection
  *  sequence which will notify the user-registered callback (set during initialization)
@@ -546,7 +555,7 @@ LM_EXPORT M_list_t * LM_SPEC LM_conn_trans_list(LM_conn_t *conn, LM_trans_status
 LM_EXPORT LM_trans_t * LM_SPEC LM_trans_new(LM_conn_t *conn);
 
 /*! Adds a string key/value pair to a transaction object.
- * 
+ *
  *  Transactions are made up of a series of string-based key/value pairs.  The key must be
  *  a non-zero length string.  The value may be zero-length or NULL, such as when un-setting
  *  a parameter.
@@ -582,14 +591,36 @@ LM_EXPORT M_bool LM_SPEC LM_trans_set_param(LM_trans_t *trans, const char *key, 
  */
 LM_EXPORT M_bool LM_SPEC LM_trans_set_param_binary(LM_trans_t *trans, const char *key, const unsigned char *value, size_t value_len);
 
+/*! Set a user-specified timeout in seconds for notification purposes.
+ *
+ *  Sets a notification timeout on the transaction.  When the timeout elapses, an
+ *  LM_EVENT_TRANS_TIMEOUT event will be delivered.  This event does NOT however
+ *  cancel the transaction and instead is simply a notification that the user-specified
+ *  timer has elapsed.  The user may choose to delete the transaction, or continue
+ *  waiting for another signal such as LM_EVENT_TRANS_DONE.
+ *
+ *  Only transactions that have not had LM_trans_send() called are eligible to be
+ *  set for timeout.
+ *
+ *  The timeout timer starts once the transaction has been put on the wire, so if
+ *  there are errors connecting, the timer will not start until a connection has
+ *  been established.  The timer is bound to the same event loop as the established
+ *  connection so it is guaranteed they will signal using the same thread.
+ *
+ *  \param[in] trans     Initialized transaction object by LM_trans_new()
+ *  \param[in] timeout_s Seconds after sending for the timeout signal to be delivered.
+ *  \return M_TRUE if successfully set, M_FALSE on misuse.
+ */
+LM_EXPORT M_bool LM_SPEC LM_trans_set_timeout(LM_trans_t *trans, M_uint64 timeout_s);
+
 /*! Send the transaction.
- * 
+ *
  *  Marks the transaction as being ready to be sent.  If the connection is not yet established,
  *  the transaction will move to the READY state, if the transaction is already established,
  *  the transaction will be put on the wire and moved to the PENDING state.  The transaction
  *  must have at least one parameter associated with it.
  *
- *  If the connection is not already established, this function will implicitly start a 
+ *  If the connection is not already established, this function will implicitly start a
  *  connection sequence,  this includes re-connecting when a connection has been lost.
  *
  *  \param[in] trans Initialized transaction object by LM_trans_new()
@@ -604,7 +635,7 @@ LM_EXPORT M_bool LM_SPEC LM_trans_send(LM_trans_t *trans);
  *  a convenience function if transactional data is already stored within a Dictionary.
  *  The Dictionary will be duplicated.
  *
- *  If the connection is not already established, this function will implicitly start a 
+ *  If the connection is not already established, this function will implicitly start a
  *  connection sequence,  this includes re-connecting when a connection has been lost.
  *
  *  \param[in] conn Initialized connection object
@@ -673,7 +704,7 @@ LM_EXPORT LM_trans_t * LM_SPEC LM_conn_get_trans_by_internal_id(LM_conn_t *conn,
 LM_EXPORT void LM_SPEC LM_trans_delete(LM_trans_t *trans);
 
 /*! Retrieve the current transaction status in the lifecycle.
- * 
+ *
  *  \param[in] trans Initialized transaction object.
  *  \return One of LM_trans_status_t states.
  */
