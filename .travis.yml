@@ -120,8 +120,8 @@ install:
     fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5.4 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5.4
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5.5 550 --slave /usr/bin/g++ g++ /usr/bin/g++-5.5
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
       sudo update-alternatives --set gcc /usr/bin/gcc-8
     fi
 
