@@ -1,5 +1,5 @@
 language: c
-dist: trusty
+dist: xenial
 sudo: required
 
 cache:
@@ -10,7 +10,7 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - sourceline: 'ppa:adrozdoff/cmake' # newer cmake
-      - llvm-toolchain-trusty-5.0
+      - llvm-toolchain-xenial-7
     packages:
       - cmake
       - libssl-dev
@@ -20,7 +20,7 @@ addons:
       - clang-tools-5.0
       - libsqlite3-dev
       - libc-ares-dev
-      - gcc-7
+      - gcc-8
 
 # Add coverity certificate to system ca-certificates
 before_install:
@@ -64,7 +64,7 @@ jobs:
     - stage: Static Analysis
       os: linux
       env: 
-        - BUILD_TYPE="analyze" OPENSSL_ROOT_DIR="" SCAN_BUILD="scan-build-5.0"
+        - BUILD_TYPE="analyze" OPENSSL_ROOT_DIR="" SCAN_BUILD="scan-build-7"
       compiler: clang
     - os: osx
       osx_image: xcode10.1
@@ -88,17 +88,17 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:adrozdoff/cmake' # newer cmake
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-xenial-7
           packages:
             - cmake
             - libssl-dev
             - doxygen
             - check
-            - clang-5.0
-            - clang-tools-5.0
+            - clang-7
+            - clang-tools-7
             - libsqlite3-dev
             - libc-ares-dev
-            - gcc-7
+            - gcc-8
     - stage: Runtime Analysis
       os: linux
       env: 
@@ -120,9 +120,9 @@ install:
     fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-      sudo update-alternatives --set gcc /usr/bin/gcc-7
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+      sudo update-alternatives --set gcc /usr/bin/gcc-8
     fi
 
 
