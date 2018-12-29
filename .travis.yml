@@ -16,8 +16,8 @@ addons:
       - libssl-dev
       - doxygen
       - check
-      - clang-5.0
-      - clang-tools-5.0
+      - clang-7
+      - clang-tools-7
       - libsqlite3-dev
       - libc-ares-dev
       - gcc-8
@@ -120,7 +120,7 @@ install:
     fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5.4 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5.4
       sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
       sudo update-alternatives --set gcc /usr/bin/gcc-8
     fi
