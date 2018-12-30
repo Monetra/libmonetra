@@ -15,7 +15,6 @@ addons:
       - cmake
       - libssl-dev
       - doxygen
-      - check
       - clang-7
       - clang-tools-7
       - libsqlite3-dev
@@ -41,7 +40,7 @@ jobs:
   include:
     - stage: normal builds
       os: linux
-      env: 
+      env:
         - BUILD_TYPE="cmake" OPENSSL_ROOT_DIR="" GHPAGES_DEPLOY="yes"
       compiler: clang
     - os: linux
@@ -63,12 +62,12 @@ jobs:
         - BUILD_TYPE="autotools" CONFIG_OPTS="--with-ssl-dir=/usr/local/opt/openssl"
     - stage: Static Analysis
       os: linux
-      env: 
+      env:
         - BUILD_TYPE="analyze" OPENSSL_ROOT_DIR="" SCAN_BUILD="scan-build-7"
       compiler: clang
     - os: osx
       osx_image: xcode10.1
-      env: 
+      env:
         - BUILD_TYPE="analyze" OPENSSL_ROOT_DIR="/usr/local/opt/openssl" SCAN_BUILD="scan-build"
       compiler: clang
     - os: linux
@@ -101,7 +100,7 @@ jobs:
             - gcc-8
     - stage: Runtime Analysis
       os: linux
-      env: 
+      env:
         - BUILD_TYPE="asan" OPENSSL_ROOT_DIR=""
       compiler: clang
     - os: osx
@@ -120,10 +119,17 @@ install:
     fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      ls /usr/bin/g*
       sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 500 --slave /usr/bin/g++ g++ /usr/bin/g++-5
       sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
       sudo update-alternatives --set gcc /usr/bin/gcc-8
+      # The libcheck in Ubuntu 16.04 can't be linked against, so we need to build our own.
+      cd /tmp && \
+      wget https://github.com/libcheck/check/releases/download/0.12.0/check-0.12.0.tar.gz && \
+      tar -zxvpf check-0.12.0.tar.gz && \
+      cd check-0.12.0 && \
+      ./configure --prefix=/usr/local && \
+      make && \
+      sudo make install
     fi
 
 
