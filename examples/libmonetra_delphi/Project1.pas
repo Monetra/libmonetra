@@ -58,7 +58,7 @@ begin
 		Number := Number div 10;
 	end;
 	if Minus then
-	Result := '-' + Result;
+		Result := '-' + Result;
 end;
 
 begin // main program begin
