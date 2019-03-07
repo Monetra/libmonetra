@@ -25,18 +25,18 @@ const
 	host = 'test.transafe.com';
 	port = 8665;
 
-function M_InitEngine(CAfile: PChar): Boolean; stdcall; external 'libmonetra.dll';
-function M_InitConn(var conn: M_CONN): Boolean; stdcall; external 'libmonetra.dll';
-function M_SetIP(var conn: M_CONN; host: PChar; port: Integer): Boolean; stdcall; external 'libmonetra.dll';
-function M_SetBlocking(var conn: M_CONN; tf: Integer): Boolean; stdcall; external 'libmonetra.dll';
-function M_ConnectionError(var conn: M_CONN): PChar; stdcall; external 'libmonetra.dll';
-function M_Connect(var conn: M_CONN): Boolean; stdcall; external 'libmonetra.dll';
-function M_TransNew(var conn: M_CONN): M_UINTPTR; stdcall; external 'libmonetra.dll';
-function M_TransKeyVal(var conn: M_CONN; id: M_UINTPTR; key: PChar; val: PChar): Boolean; stdcall; external 'libmonetra.dll';
-function M_TransSend(var conn: M_CONN; id: M_UINTPTR): Boolean; stdcall; external 'libmonetra.dll';
-procedure M_DestroyConn(var conn: M_CONN); stdcall; external 'libmonetra.dll';
-procedure M_DestroyEngine(); stdcall; external 'libmonetra.dll';
-function M_ResponseParam(var conn: M_CONN; id: M_UINTPTR; key: PChar): PChar; stdcall; external 'libmonetra.dll';
+function M_InitEngine(CAfile: PChar): Boolean; cdecl; external 'libmonetra.dll';
+function M_InitConn(var conn: M_CONN): Boolean; cdecl; external 'libmonetra.dll';
+function M_SetIP(var conn: M_CONN; host: PChar; port: Integer): Boolean; cdecl; external 'libmonetra.dll';
+function M_SetBlocking(var conn: M_CONN; tf: Integer): Boolean; cdecl; external 'libmonetra.dll';
+function M_ConnectionError(var conn: M_CONN): PChar; cdecl; external 'libmonetra.dll';
+function M_Connect(var conn: M_CONN): Boolean; cdecl; external 'libmonetra.dll';
+function M_TransNew(var conn: M_CONN): M_UINTPTR; cdecl; external 'libmonetra.dll';
+function M_TransKeyVal(var conn: M_CONN; id: M_UINTPTR; key: PChar; val: PChar): Boolean; cdecl; external 'libmonetra.dll';
+function M_TransSend(var conn: M_CONN; id: M_UINTPTR): Boolean; cdecl; external 'libmonetra.dll';
+procedure M_DestroyConn(var conn: M_CONN); cdecl; external 'libmonetra.dll';
+procedure M_DestroyEngine(); cdecl; external 'libmonetra.dll';
+function M_ResponseParam(var conn: M_CONN; id: M_UINTPTR; key: PChar): PChar; cdecl; external 'libmonetra.dll';
 
 function Int2Str(Number : Int64) : String;
 var Minus : Boolean;
