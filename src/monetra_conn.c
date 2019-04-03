@@ -389,6 +389,7 @@ M_bool LM_SPEC LM_conn_connect(LM_conn_t *conn)
 		M_tls_clientctx_set_default_trust(conn->tlsctx);
 		M_tls_clientctx_set_verify_level(conn->tlsctx, M_TLS_VERIFY_FULL);
 		M_tls_clientctx_set_negotiation_timeout_ms(conn->tlsctx, conn->conn_timeout * 1000);
+		M_tls_clientctx_set_protocols(conn->tlsctx, M_TLS_PROTOCOL_TLSv1_2);
 	}
 
 	/* Create the IO object for the network connection */
