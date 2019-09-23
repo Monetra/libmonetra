@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/")
 include(DefaultBuildType)
 
 project(LibMonetra
-	VERSION   8.5.0
+	VERSION   8.6.0
 	LANGUAGES C
 )
 set(PROJECT_SOVERSION ${PROJECT_VERSION_MAJOR})
