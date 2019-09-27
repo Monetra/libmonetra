@@ -10,9 +10,9 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyTitle("libmonetra_vbnet")> 
 <Assembly: AssemblyDescription("")> 
-<Assembly: AssemblyCompany("Main Street Softworks")> 
+<Assembly: AssemblyCompany("Monetra Technologies, LLC")> 
 <Assembly: AssemblyProduct("libmonetra_vbnet")> 
-<Assembly: AssemblyCopyright("Copyright © Main Street Softworks 2008")> 
+<Assembly: AssemblyCopyright("Copyright © Monetra Technologies, LLC 2008")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>

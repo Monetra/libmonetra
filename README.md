@@ -1,9 +1,9 @@
 About
 =====
 
-LibMonetra is the C library for communicating Main Street Softworks products
-that utilize the Monetra IP/SSL protocol. It was created by Main Street
-Softworks for use in their Monetra Payment Engine and associated products. Such
+LibMonetra is the C library for communicating Monetra Technologies, LLC products
+that utilize the Monetra IP/SSL protocol. It was created by Monetra Technologies, LLC
+for use in their Monetra Payment Engine and associated products. Such
 as, UniTerm.
 
 v8 Changes

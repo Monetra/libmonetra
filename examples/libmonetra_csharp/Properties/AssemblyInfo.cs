@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("libmonetra_csharp")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Main Street Softworks")]
+[assembly: AssemblyCompany("Monetra Technologies, LLC")]
 [assembly: AssemblyProduct("libmonetra_csharp")]
-[assembly: AssemblyCopyright("Copyright © Main Street Softworks 2008")]
+[assembly: AssemblyCopyright("Copyright © Monetra Technologies, LLC 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
