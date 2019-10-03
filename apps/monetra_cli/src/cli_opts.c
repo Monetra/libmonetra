@@ -485,6 +485,8 @@ static M_bool cli_bool_cb(char short_opt, const char *long_opt, M_bool boolean, 
 		opts->send_serial = M_TRUE;
 	} else if (M_str_caseeq(long_opt, "pin-ksn")) {
 		opts->send_pinksn = M_TRUE;
+	} else if (M_str_caseeq(long_opt, "trace")) {
+		opts->enable_trace = M_TRUE;
 	} else {
 		return M_FALSE;
 	}
@@ -559,6 +561,7 @@ cli_trans_t *cli_parse_args(int argc, const char *const *argv)
 	M_getopt_addstring(g, 'r', "random_amount", M_TRUE, "Use a random amount [min:]max (will never be $8.00 - $8.99 due to delay trigger). Default min if not specified is $0.01.", cli_string_cb);
 	M_getopt_addboolean(g, 's', "serial", M_FALSE, "Send transaction one at a time. Default is to send them in parallel when using the dup option.", cli_bool_cb);
 	M_getopt_addboolean(g, 0, "pin-ksn", M_FALSE, "Insert generic PIN/KSN", cli_bool_cb);
+	M_getopt_addboolean(g, 0, "trace", M_FALSE, "Enable I/O connection tracing", cli_bool_cb);
 	M_getopt_addboolean(g, 'h', "help", M_FALSE, "Help", cli_bool_cb);
 
 	ret = M_getopt_parse(g, argv, argc, &fail, opts);

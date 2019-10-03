@@ -34,6 +34,8 @@ typedef struct {
 	size_t                outstanding_cnt; /*!< Numer of KVS transactions that have not been queued. Used to track
 	                                            allow the last and only the last transaction to finish to issue
 	                                            a disconnect. */
+
+	M_bool                enable_trace;    /*!< Enable I/O tracing. */
 } cli_trans_t;
 
 
@@ -73,6 +75,8 @@ typedef struct {
 	                                           command line arguments. */
 	M_bool                port_set;       /*!< Was the port explicitly set. This will disable auto port (user vs admin)
 	                                           selection. */
+
+	M_bool                enable_trace;   /*!< Enable I/O tracing. */
 } cli_opts_t;
 
 cli_opts_t *cli_opts_create(void);

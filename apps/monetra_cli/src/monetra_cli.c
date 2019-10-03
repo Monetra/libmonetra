@@ -1,5 +1,41 @@
 #include "monetra_cli.h"
 
+static void io_trace(void *cb_arg, M_io_trace_type_t type, M_event_type_t event_type, const unsigned char *data, size_t data_len)
+{
+	const char *io_type = "UNKNOWN";
+	char       *dump    = NULL;
+
+	(void)cb_arg;
+	(void)event_type;
+
+	switch (type) {
+		case M_IO_TRACE_TYPE_READ:
+			io_type = "READ";
+			break;
+		case M_IO_TRACE_TYPE_WRITE:
+			io_type = "WRITE";
+			break;
+		case M_IO_TRACE_TYPE_EVENT:
+			return;
+	}
+
+	dump = M_str_hexdump(M_STR_HEXDUMP_NONE, 0, "\t", data, data_len);
+	if (M_str_isempty(dump)) {
+		M_free(dump);
+		dump = M_strdup("\t<No Data>\n");
+	}
+
+	M_printf("%s\n%s\n", io_type, dump);
+	M_free(dump);
+}
+
+static void conn_iocreate_cb(LM_conn_t *conn, M_io_t *io, void *arg)
+{
+	(void)arg;
+	(void)conn;
+	M_io_add_trace(io, NULL, io_trace, arg, NULL, NULL);
+}
+
 /* Print KVS with the = sign aligned. */
 static void print_kvs(const M_hash_dict_t *kvs)
 {
@@ -212,6 +248,9 @@ int main(int argc, char **argv)
 	/* User data is the cli trans so transactions can be pulled out of it
  	 * in the event loop. */
 	LM_conn_set_userdata(conn, trans);
+
+	if (trans->enable_trace)
+		LM_conn_set_iocreate_callback(conn, conn_iocreate_cb, NULL);
 
 	M_printf("-- Request --\n");
 	list_trans(trans);

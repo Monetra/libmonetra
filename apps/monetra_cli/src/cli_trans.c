@@ -50,10 +50,10 @@ cli_trans_t *cli_trans_create(cli_opts_t *opts, const char **fail)
 	trans->certvalidation = opts->certvalidation;
 
 	/* Create the list that we'll put the KVS transactions into. */
-	lcbs.value_free = (M_list_free_func)M_hash_dict_destroy;
-	trans->kvs      = M_list_create(&lcbs, M_LIST_NONE);
-
-	trans->send_serial = opts->send_serial;
+	lcbs.value_free     = (M_list_free_func)M_hash_dict_destroy;
+	trans->kvs          = M_list_create(&lcbs, M_LIST_NONE);
+	trans->send_serial  = opts->send_serial;
+	trans->enable_trace = opts->enable_trace;
 
 	/* Create the rand object outside of the loop because we want to reuse it
  	 * if we're selecting random amounts. It's not a big deal if we create it
