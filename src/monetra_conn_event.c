@@ -117,6 +117,11 @@ static void LM_conn_cleanup_ping(LM_conn_t *conn)
 	M_event_timer_remove(conn->timer);
 	conn->timer = NULL;
 
+	/* Remove it from the queue.
+	 * Need to be in a lock and need to take because remove will destroy the
+	 * txn and we can't have that happen here. */
+	M_queue_take(conn->trans_pending, conn->pingtxn);
+
 	/* Kill the ping response (if any), must not be holding the conn lock. */
 	M_thread_mutex_unlock(conn->lock);
 	LM_trans_delete(conn->pingtxn);
