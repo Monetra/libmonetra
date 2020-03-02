@@ -1,3 +1,9 @@
+' Steps to testing VB6.
+' 1) Create a new Standard EXE
+' 2) Add this libmonetra_vb6.bas file to the project
+' 3) Project->Properties->General->Startup Object: "Sub Main"
+' 4) Run
+
 Attribute VB_Name = "libmonetra_vb6"
 Option Explicit
 
@@ -9,6 +15,7 @@ Public Const M_ERROR As Long = -1
 Public Const M_DONE As Long = 2
 Public Const M_PENDING As Long = 1
 
+Private Declare Function SetDllDirectory Lib "Kernel32" Alias "SetDllDirectoryA" (ByVal path As String) As Long
 Declare Function M_InitEngine Lib "libmonetra_stdcall" (ByVal cafile As String) As Long
 Declare Sub M_DestroyEngine Lib "libmonetra_stdcall" ()
 Declare Sub M_InitConn Lib "libmonetra_stdcall" (ByRef conn As Long)
@@ -131,11 +138,12 @@ Sub RunTrans(ByVal conn As Long)
         Dim output As String
 
         id = M_TransNew(conn)
-        M_TransKeyVal conn, id, "username", "vitale"
-        M_TransKeyVal conn, id, "password", "test"
+        M_TransKeyVal conn, id, "username", "test_retail:public"
+        M_TransKeyVal conn, id, "password", "publ1ct3st"
         M_TransKeyVal conn, id, "action", "sale"
         M_TransKeyVal conn, id, "account", "4012888888881881"
-        M_TransKeyVal conn, id, "expdate", "0512"
+        M_TransKeyVal conn, id, "expdate", "0525"
+        M_TransKeyVal conn, id, "zip", "32606"
         M_TransKeyVal conn, id, "amount", "12.00"
         If M_TransSend(conn, id) = 0 Then
                 MsgBox ("Failed to send trans")
@@ -175,8 +183,8 @@ Sub RunReport(ByVal conn As Long)
         Dim output As String
 
         id = M_TransNew(conn)
-        M_TransKeyVal conn, id, "username", "vitale"
-        M_TransKeyVal conn, id, "password", "test"
+        M_TransKeyVal conn, id, "username", "test_retail:public"
+        M_TransKeyVal conn, id, "password", "publ1ct3st"
         M_TransKeyVal conn, id, "action", "admin"
         M_TransKeyVal conn, id, "admin", "gut"
         If M_TransSend(conn, id) = 0 Then
@@ -189,6 +197,7 @@ Sub RunReport(ByVal conn As Long)
         retval = M_ReturnStatus(conn, id)
         If Not retval = M_SUCCESS Then
                 output = "Bad return status: " & retval
+                MsgBox (output)
 		Exit Sub
         End If
         M_ParseCommaDelimited conn, id
@@ -216,6 +225,12 @@ Sub RunReport(ByVal conn As Long)
                         line = line & M_GetCellbyNum(conn, id, j, i)
                 Next
                 output = output & line & Chr(13) & Chr(10)
+
+                ' Might be a huge report, just exit, we've proved what we wanted
+                If i > 5 Then
+                         output = output & "..."
+                         Exit For
+                End If
         Next
 
         M_DeleteTrans conn, id
@@ -225,7 +240,11 @@ End Sub
 Sub Main()
     Dim conn As Long
     Dim error As Long
-    
+
+    ' Locate the libmonetra Dlls if not in the app directory.
+    ' May be C:\Program Files (x86)\LibMonetra\bin on 64bit systems.
+    SetDllDirectory "C:\\Program Files\\LibMonetra\\bin"
+
     M_InitEngine ("")
     M_InitConn conn
     If (conn = 0) Then
