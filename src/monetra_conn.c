@@ -40,7 +40,7 @@ LM_conn_t * LM_SPEC LM_conn_init(M_event_t *event, LM_event_callback_t event_cal
 	conn->outbuf         = M_buf_create();
 	conn->inbuf          = M_parser_create(M_PARSER_FLAG_NONE);
 
-	conn->dns            = M_dns_create();
+	conn->dns            = M_dns_create(event);
 
 	conn->mode           = LM_MODE_TLS;
 	conn->conn_timeout   = 10;
