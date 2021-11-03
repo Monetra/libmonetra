@@ -57,7 +57,7 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 			break;
 		case LM_EVENT_TRANS_ERROR:
 		case LM_EVENT_TRANS_NOCONNECT:
-			M_printf("Transaction %p error (connectivity): %s\n", trans, LM_conn_error(conn));
+			ck_abort_msg("Transaction %p error (connectivity): %s", trans, LM_conn_error(conn));
 			LM_trans_delete(trans);
 			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup.
 			break;
@@ -84,7 +84,7 @@ static M_bool check_monetra_test(void)
 	LM_trans_set_param(trans, "password", "publ1ct3st");
 	LM_trans_set_param(trans, "action", "sale");
 	LM_trans_set_param(trans, "account", "4012888888881881");
-	LM_trans_set_param(trans, "expdate", "1220");
+	LM_trans_set_param(trans, "expdate", "1249");
 	LM_trans_set_param(trans, "zip", "32606");
 	LM_trans_set_param(trans, "cv", "999");
 	LM_trans_set_param(trans, "amount", "12.00");

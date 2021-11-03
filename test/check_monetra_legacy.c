@@ -31,16 +31,13 @@ static int check_monetra_legacy_test(void)
 	M_TransKeyVal(&conn, identifier, "password", "publ1ct3st");
 	M_TransKeyVal(&conn, identifier, "action",   "sale");
 	M_TransKeyVal(&conn, identifier, "account",  "4012888888881881");
-	M_TransKeyVal(&conn, identifier, "expdate",  "0520");
+	M_TransKeyVal(&conn, identifier, "expdate",  "0549");
 	M_TransKeyVal(&conn, identifier, "amount",   "12.00");
 	M_TransKeyVal(&conn, identifier, "zip",      "32606");
 
 	printf("Sending Transaction\r\n");
-	if (!M_TransSend(&conn, identifier)) {
-		printf("Could not send trans\r\n");
-		M_DestroyConn(&conn);
-		return 0;
-	}
+	ck_assert_msg(M_TransSend(&conn, identifier), "Could not send trans: %s\r\n", M_ConnectionError(&conn));
+
 	printf("Transaction response received\r\n");
 	if (M_ReturnStatus(&conn, identifier) == M_SUCCESS) {
 		printf("Transaction Authorized: %s -- %s\r\n", M_ResponseParam(&conn, identifier, "code"),
