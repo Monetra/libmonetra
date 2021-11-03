@@ -112,7 +112,7 @@ task:
       mkdir -p thirdparty/mstdlib/thirdparty thirdparty/mstdlib/thirdparty/sqlite-amalgamation
       git clone --depth=1 https://github.com/c-ares/c-ares.git thirdparty/mstdlib/thirdparty/c-ares
       wget https://sqlite.org/2021/sqlite-amalgamation-3360000.zip -O thirdparty/mstdlib/thirdparty/sqlite-amalgamation.zip
-      unzip -j thirdparty/sqlite-amalgamation.zip -d thirdparty/mstdlib/thirdparty/sqlite-amalgamation
+      unzip -j thirdparty/mstdlib/thirdparty/sqlite-amalgamation.zip -d thirdparty/mstdlib/thirdparty/sqlite-amalgamation
 
   build_script:
     - |
