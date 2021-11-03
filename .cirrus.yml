@@ -77,6 +77,9 @@ task:
             valgrind)
               apt-get install -y valgrind
               ;;
+            autotools)
+              apt-get install -y automake autoconf libtool make
+              ;;
           esac
           ;;
         FREEBSD)
