@@ -35,22 +35,24 @@
 #   An additional configuration argument of --with-name-dir= will be added to allow
 #   the caller to specify their desired search path list.
 #
+#   Any libraries specified in <extra libs> will be appended to the NAME_LIBADD.
+#
 #   Example:
 #
-#    AX_FIND_PACKAGE(openssl, [/usr/local/ssl /usr/local/openssl /usr/local], [ssl.h], [EVP_EncryptInit], [crypto])
+#    AX_FIND_PACKAGE(openssl, [/usr/local/ssl /usr/local/openssl /usr/local /usr/local/ssl1.1], [openssl/ssl.h], [SSL_connect], [ssl], [-lcrypto])
 #
 #    might result in shell variables being set:
 #
 #    OPENSSL_FOUND=yes
 #    OPENSSL_CPPFLAGS=-I/usr/local/ssl/include
 #    OPENSSL_LDFLAGS=-Wl,-rpath-link,/usr/local/ssl/lib -L/usr/local/ssl/lib
-#    OPENSSL_LIBADD=-lcrypto
+#    OPENSSL_LIBADD=-lssl -lcrypto
 #
 #    or if not found:
 #
 #    OPENSSL_FOUND=no
 #
-#serial 1
+#serial 2
 
 AC_DEFUN([AX_FIND_PACKAGE],
 	[
@@ -120,9 +122,10 @@ AC_DEFUN([AX_FIND_PACKAGE],
 				AS_VAR_POPDEF([ax_package_ldflags])
 
 
-				eval "ax_lib_lib=`echo '${'have_lib_${ax_name}_lib'}'`"
+				eval "ax_lib_lib=\"`echo -l'${'have_lib_${ax_name}_lib'}' '${ax_extra_libs}'`\""
 				AS_VAR_PUSHDEF([ax_package_libadd], [${ax_pkg_name}_LIBADD])
-				AS_VAR_SET([ax_package_libadd], [-l${ax_lib_lib}])
+
+				AS_VAR_SET([ax_package_libadd], [${ax_lib_lib}])
 				m4_pushdef([AX_AC_SUBST], m4_translit([$1], [-a-z], [_A-Z])_LIBADD)
 				AC_SUBST(AX_AC_SUBST)
 				m4_popdef([AX_AC_SUBST])

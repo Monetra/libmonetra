@@ -40,31 +40,36 @@ DX_DOT_FEATURE(ON)
 DX_HTML_FEATURE(ON)
 
 
-dnl
-dnl tests
-dnl
-AC_ARG_ENABLE(tests,
-	AC_HELP_STRING([--disable-tests], [Disable building of tests]),
-	[ build_tests=${enableval} ],
-	[ build_tests=maybe ])
+dnl ------- LIBCHECK ---------
 
-AX_FIND_PACKAGE(check,
-		[/usr/local/check /usr/local],
-		[check.h],
-		[srunner_create],
-		[check])
-
-if test "$CHECK_FOUND" = "yes" -a "$build_tests" != "no" ; then
-	build_tests=yes
-else
-	if test "$build_tests" = "yes" ; then
-		AC_MSG_ERROR([tests enabled but libcheck not found])
-	fi
-	build_tests=no
+check_dep_libs=""
+AX_FIND_LIBRARY([check_math],    [m],       [floor],              [], ${check_dep_libs})
+if test "$have_lib_check_math" = "yes" ; then
+  check_dep_libs="-l${have_lib_check_math_lib} ${check_dep_libs}"
+fi
+AX_FIND_LIBRARY([check_pthread], [pthread], [pthread_mutex_init], [], ${check_dep_libs})
+if test "$have_lib_check_pthread" = "yes" ; then
+  check_dep_libs="-l${have_lib_check_pthread_lib} ${check_dep_libs}"
+fi
+AX_FIND_LIBRARY([check_rt],      [rt],      [timer_delete],       [], ${check_dep_libs})
+if test "$have_lib_check_rt" = "yes" ; then
+  check_dep_libs="-l${have_lib_check_rt_lib} ${check_dep_libs}"
+fi
+AX_FIND_LIBRARY([check_subunit], [subunit], [subunit_test_start], [], ${check_dep_libs})
+if test "$have_lib_check_subunit" = "yes" ; then
+  check_dep_libs="-l${have_lib_check_subunit_lib} ${check_dep_libs}"
 fi
 
-AC_MSG_CHECKING([if tests are enabled])
-AC_MSG_RESULT($build_tests)
+AX_FIND_PACKAGE(check,
+	[/usr/local/check /usr/local/check32 /usr/local/check64 /usr/local],
+	[check.h],
+	[suite_create],
+	[check_pic check],
+	${check_dep_libs},
+	[/include/check /include /],
+	[/lib/check /lib /])
+
+AM_CONDITIONAL([HAVE_CHECK],        [ test $CHECK_FOUND = yes ])
 
 
 dnl ----- Check for Position Independent Executable flags -----
@@ -216,7 +221,20 @@ else
 fi
 
 LIBMONETRA_BUILD_SUBDIRS="${LIBMONETRA_BUILD_SUBDIRS} include src"
-if test "$build_tests" = "yes" ; then
+
+dnl
+dnl tests
+dnl
+AC_ARG_ENABLE(tests,
+	AC_HELP_STRING([--disable-tests], [Disable building of tests]),
+	[ build_tests=${enableval} ],
+	[ build_tests=yes ])
+
+
+if test "${build_tests}" = "yes" ; then
+	if test "${CHECK_FOUND}" != "yes" ; then
+		AC_MSG_ERROR([libcheck not found, requried for tests])
+	fi
 	LIBMONETRA_BUILD_SUBDIRS="${LIBMONETRA_BUILD_SUBDIRS} test"
 fi
 
