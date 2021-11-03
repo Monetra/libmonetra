@@ -6,8 +6,8 @@
 
 static int check_monetra_legacy_test(void)
 {
-	const char    *host = "testbox.monetra.com";
-	unsigned short port = 8665;
+	const char    *host = "test.transafe.com";
+	unsigned short port = 443;
 	M_CONN         conn;
 	M_uintptr      identifier;
 

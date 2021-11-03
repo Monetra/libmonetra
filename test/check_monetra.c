@@ -70,7 +70,7 @@ static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t ty
 static M_bool check_monetra_test(void)
 {
 	M_event_t *event    = M_event_create(M_EVENT_FLAG_NONE);
-	LM_conn_t *conn     = LM_conn_init(event, trans_callback, "testbox.monetra.com", 8665);
+	LM_conn_t *conn     = LM_conn_init(event, trans_callback, "test.transafe.com", 443);
 	LM_trans_t *trans;
 
 	/* Set 2s idle timeout.  This is how we want to exit the script to verify this works */
@@ -107,7 +107,7 @@ static M_bool check_monetra_test(void)
 static M_bool check_monetra_report_test(void)
 {
 	M_event_t *event    = M_event_create(M_EVENT_FLAG_NONE);
-	LM_conn_t *conn     = LM_conn_init(event, trans_callback, "testbox.monetra.com", 8665);
+	LM_conn_t *conn     = LM_conn_init(event, trans_callback, "test.transafe.com", 443);
 	LM_trans_t *trans;
 
 	/* Set 2s idle timeout.  This is how we want to exit the script to verify this works */
