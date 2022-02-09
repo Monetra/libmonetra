@@ -55,7 +55,8 @@ static void LM_conn_event_handle_conn_error(M_list_t **events, LM_conn_t *conn, 
 
 	/* If we requested a disconnect, but got an error for some reason, rewrite to a
 	 * disconnect */
-	if (type == M_EVENT_TYPE_ERROR && conn->status == LM_CONN_STATUS_DISCONNECTING) {
+	if (type == M_EVENT_TYPE_ERROR &&
+	    (conn->status == LM_CONN_STATUS_DISCONNECTING || conn->status == LM_CONN_STATUS_IDLE_TIMEOUT)) {
 		type = M_EVENT_TYPE_DISCONNECTED;
 	}
 
