@@ -306,7 +306,12 @@ static void monetra_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t 
 			create_connection(event);
 			break;
 		case LM_EVENT_CONN_ERROR:
-			M_printf("\r\nDisconnect or Error received: %s\n", LM_conn_error(conn));
+			if (priv->num_txns) {
+				M_printf("\nDisconnect or Error received after %zu transactions on connection: %s\n", priv->num_txns, LM_conn_error(conn));
+			} else {
+				M_printf("\nDisconnect or Error received during connect: %s\n", LM_conn_error(conn));
+			}
+			M_printf("%zu total connections, %zu total transactions\n", track_num_connections, track_num_transactions);
 			exit(1);
 			break;
 		case LM_EVENT_TRANS_DONE:

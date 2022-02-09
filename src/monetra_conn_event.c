@@ -53,6 +53,12 @@ static void LM_conn_event_handle_conn_error(M_list_t **events, LM_conn_t *conn, 
 	M_queue_foreach_t *q_foreach           = NULL;
 	M_bool             disconnect_was_idle = (conn->status == LM_CONN_STATUS_IDLE_TIMEOUT);
 
+	/* If we requested a disconnect, but got an error for some reason, rewrite to a
+	 * disconnect */
+	if (type == M_EVENT_TYPE_ERROR && conn->status == LM_CONN_STATUS_DISCONNECTING) {
+		type = M_EVENT_TYPE_DISCONNECTED;
+	}
+
 	/* Destroy the io object and any associated unprocessed data */
 	M_io_destroy(conn->io);
 	M_event_trigger_remove(conn->write_trigger);
