@@ -11,6 +11,7 @@ struct _M_CONN {
 	M_bool             trust_loaded;
 	M_bool             blocking;
 	M_uint64           txntimeout;
+	M_bool             is_monitor_previously_successful;
 };
 
 static char *M_global_capath = NULL;
@@ -329,7 +330,8 @@ int LM_SPEC M_Monitor_ex(M_CONN *conn, long wait_us)
 	 *       no pending transactions as we don't want someone to actually detect
 	 *       this as an error condition since it could be mishandled. */
 	if (LM_conn_trans_count((*conn)->conn, LM_TRANS_STATUS_PENDING) == 0 &&
-		LM_conn_trans_count((*conn)->conn, LM_TRANS_STATUS_READY) == 0) {
+		LM_conn_trans_count((*conn)->conn, LM_TRANS_STATUS_READY) == 0 &&
+		!(*conn)->is_monitor_previously_successful) {
 		return 1;
 	}
 
@@ -366,6 +368,7 @@ int LM_SPEC M_Monitor_ex(M_CONN *conn, long wait_us)
 		return 0;
 	}
 
+	(*conn)->is_monitor_previously_successful = M_TRUE;
 	return 1;
 }
 
