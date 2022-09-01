@@ -186,7 +186,8 @@ enum LM_conn_status {
 	LM_CONN_STATUS_CONNECTED     = 2, /*!< Actively connected */
 	LM_CONN_STATUS_DISCONNECTING = 3, /*!< In the process of disconnecting */
 	LM_CONN_STATUS_IDLE_TIMEOUT  = 4, /*!< In the process of disconnecting due to idle timeout */
-	LM_CONN_STATUS_DISCONNECTED  = 5  /*!< Connection failed or not yet attempted */
+	LM_CONN_STATUS_DISCONNECTED  = 5, /*!< Connection failed */
+	LM_CONN_STATUS_INITIAL       = 6, /*!< Connection not yet attempted */
 };
 typedef enum LM_conn_status LM_conn_status_t;
 

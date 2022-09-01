@@ -327,9 +327,14 @@ int LM_SPEC M_Monitor_ex(M_CONN *conn, long wait_us)
 	 *       Recent versions of Monetra have idle timeouts, and this API now
 	 *       supports auto-reconnects ... so don't return an error if there are
 	 *       no pending transactions as we don't want someone to actually detect
-	 *       this as an error condition since it could be mishandled. */
-	if (LM_conn_trans_count((*conn)->conn, LM_TRANS_STATUS_PENDING) == 0 &&
-		LM_conn_trans_count((*conn)->conn, LM_TRANS_STATUS_READY) == 0) {
+	 *       this as an error condition since it could be mishandled.
+	 * NOTE: The previous logic would say that the connection was valid when
+	 *       the PENDING and READY transaction counts were 0.  The logic in M_TransSend
+	 *       disallows transactions to be queued when the connection isn't connected.
+	 *       this results in frequent false-positive monitor status. This may introduce
+	 *       a false-negative situation where a connection drops and reconnects in the
+	 *       middle of a transaction. */
+	if (LM_conn_status((*conn)->conn) == LM_CONN_STATUS_INITIAL) {
 		return 1;
 	}
 

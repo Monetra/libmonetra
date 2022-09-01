@@ -27,7 +27,7 @@ LM_conn_t * LM_SPEC LM_conn_init(M_event_t *event, LM_event_callback_t event_cal
 	conn                 = M_malloc_zero(sizeof(*conn));
 	conn->event          = event;
 	conn->event_callback = event_callback;
-	conn->status         = LM_CONN_STATUS_DISCONNECTED;
+	conn->status         = LM_CONN_STATUS_INITIAL;
 
 	conn->lock           = M_thread_mutex_create(M_THREAD_MUTEXATTR_NONE);
 	conn->rnd            = M_rand_create(0);
