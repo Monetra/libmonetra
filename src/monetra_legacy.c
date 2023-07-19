@@ -470,7 +470,7 @@ int LM_SPEC M_TransSend(M_CONN *conn, M_uintptr identifier)
 		/* Loop in a blocking M_Monitor_ex(), each time a signal comes in it will unblock
 		 * because there might be something to do */
 		while (LM_trans_status(trans) != LM_TRANS_STATUS_DONE) {
-			if (!M_Monitor_ex(conn, -1))
+			if (!M_Monitor_ex(conn, -1) && LM_trans_status(trans) != LM_TRANS_STATUS_DONE)
 				return 0;
 		}
 	}
