@@ -25,78 +25,78 @@ extern "C" {
  *
  *  static void trans_callback(LM_conn_t *conn, M_event_t *event, LM_event_type_t type, LM_trans_t *trans)
  *  {
- *  	M_list_str_t *params;
- *  	size_t        i;
+ *      M_list_str_t *params;
+ *      size_t        i;
  *
- *  	switch (type) {
- *  		case LM_EVENT_CONN_CONNECTED:
- *  			M_printf("Connected successfully\n");
- *  			break;
+ *      switch (type) {
+ *          case LM_EVENT_CONN_CONNECTED:
+ *              M_printf("Connected successfully\n");
+ *              break;
  *
- *  		case LM_EVENT_CONN_DISCONNECT:
- *  		case LM_EVENT_CONN_ERROR:
- *  			M_printf("Disconnect or Error received: %s\n", LM_conn_error(conn));
- *  			LM_conn_destroy(conn);
- *  			M_event_done(event);
- *  			break;
+ *          case LM_EVENT_CONN_DISCONNECT:
+ *          case LM_EVENT_CONN_ERROR:
+ *              M_printf("Disconnect or Error received: %s\n", LM_conn_error(conn));
+ *              LM_conn_destroy(conn);
+ *              M_event_done(event);
+ *              break;
  *
- *  		case LM_EVENT_TRANS_DONE:
- *  			M_printf("Transaction %p complete:\n", trans);
- *  			params = LM_trans_response_keys(trans);
- *  			for (i=0; i<M_list_str_len(params); i++) {
- *  				const char *key = M_list_str_at(params, i);
- *  				M_printf("\t'%s' = '%s'\n", key, LM_trans_response_param(trans, key));
- *  			}
- *  			M_list_str_destroy(params);
- *  			LM_trans_delete(trans);
- *  			// We're only running a single transaction, issue a graceful disconnect
- *  			LM_conn_disconnect(conn);
- *  			break;
+ *          case LM_EVENT_TRANS_DONE:
+ *              M_printf("Transaction %p complete:\n", trans);
+ *              params = LM_trans_response_keys(trans);
+ *              for (i=0; i<M_list_str_len(params); i++) {
+ *                  const char *key = M_list_str_at(params, i);
+ *                  M_printf("\t'%s' = '%s'\n", key, LM_trans_response_param(trans, key));
+ *              }
+ *              M_list_str_destroy(params);
+ *              LM_trans_delete(trans);
+ *              // We're only running a single transaction, issue a graceful disconnect
+ *              LM_conn_disconnect(conn);
+ *              break;
  *
- *  		case LM_EVENT_TRANS_TIMEOUT:
- *  			M_printf("\tTransaction %p timed out\n", trans);
- *  			// Transaction will actually stay enqueued and may later return LM_EVENT_TRANS_DONE.
- *  			break;
+ *          case LM_EVENT_TRANS_TIMEOUT:
+ *              M_printf("\tTransaction %p timed out\n", trans);
+ *              // Transaction will actually stay enqueued and may later return LM_EVENT_TRANS_DONE.
+ *              break;
  *
- *  		case LM_EVENT_TRANS_ERROR:
- *  		case LM_EVENT_TRANS_NOCONNECT:
- *  			M_printf("Transaction %p error (connectivity): %s\n", trans, LM_conn_error(conn));
- *  			LM_trans_delete(trans);
- *  			// We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup.
- *  			break;
- *  	}
+ *          case LM_EVENT_TRANS_ERROR:
+ *          case LM_EVENT_TRANS_NOCONNECT:
+ *              M_printf("Transaction %p error (connectivity): %s\n", trans, LM_conn_error(conn));
+ *              LM_trans_delete(trans);
+ *              // We should still get an LM_EVENT_CONN_ERROR after this event for additional cleanup.
+ *              break;
+ *      }
  *  }
  *
  *  int main(int argc, char **argv)
  *  {
- *  	M_event_t *event    = M_event_create(M_EVENT_FLAG_NONE);
- *  	LM_conn_t *conn     = LM_conn_init(event, trans_callback, "testbox.monetra.com", 8665);
- *  	LM_trans_t *trans;
+ *      M_event_t *event    = M_event_create(M_EVENT_FLAG_NONE);
+ *      LM_conn_t *conn     = LM_conn_init(event, trans_callback, "testbox.monetra.com", 8665);
+ *      LM_trans_t *trans;
  *
- *  	LM_conn_connect(conn);
+ *      LM_conn_connect(conn);
  *
- *  	trans = LM_trans_new(conn);
- *  	LM_trans_set_param(trans, "username", "test_retail:public");
- *  	LM_trans_set_param(trans, "password", "publ1ct3st");
- *  	LM_trans_set_param(trans, "action", "sale");
- *  	LM_trans_set_param(trans, "account", "4012888888881881");
- *  	LM_trans_set_param(trans, "expdate", "1220");
- *  	LM_trans_set_param(trans, "zip", "32606");
- *  	LM_trans_set_param(trans, "cv", "999");
- *  	LM_trans_set_param(trans, "amount", "12.00");
- *  	LM_trans_send(trans);
+ *      trans = LM_trans_new(conn);
+ *      LM_trans_set_param(trans, "username", "test_retail:public");
+ *      LM_trans_set_param(trans, "password", "publ1ct3st");
+ *      LM_trans_set_param(trans, "action", "sale");
+ *      LM_trans_set_param(trans, "account", "4012888888881881");
+ *      LM_trans_set_param(trans, "expdate", "1220");
+ *      LM_trans_set_param(trans, "zip", "32606");
+ *      LM_trans_set_param(trans, "cv", "999");
+ *      LM_trans_set_param(trans, "amount", "12.00");
+ *      LM_trans_send(trans);
  *
- *  	M_event_loop(event, M_TIMEOUT_INF);
+ *      M_event_loop(event, M_TIMEOUT_INF);
  *
- *  	// NOTE: we cleaned up 'conn' within the trans_callback.  We can't have
- *  	//       exited the event loop otherwise.
- *  	conn = NULL;
+ *      // NOTE: we cleaned up 'conn' within the trans_callback.  We can't have
+ *      //       exited the event loop otherwise.
+ *      conn = NULL;
  *
- *  	M_event_destroy(event);
+ *      M_event_destroy(event);
  *
- *  	M_library_cleanup();
+ *      M_library_cleanup();
  *
- *  	return 0;
+ *      return 0;
  *  }
  *  \endcode
  *
@@ -124,8 +124,8 @@ extern "C" {
 
 /*! Library initialization flags used with LM_init() */
 enum LM_init_flags {
-	LM_INIT_NORMAL           = 0,      /*!< No special flags                              */
-	LM_INIT_SSLLOCK_EXTERNAL = 1 << 0, /*!< Force SSL locking to be controlled externally */
+    LM_INIT_NORMAL           = 0,      /*!< No special flags                              */
+    LM_INIT_SSLLOCK_EXTERNAL = 1 << 0, /*!< Force SSL locking to be controlled externally */
 };
 
 /*! @} */
@@ -143,50 +143,50 @@ typedef struct LM_conn LM_conn_t;
 /*! Events triggered.  Contains both connection-specific events and transaction-specific
  *  events. */
 enum LM_event_type {
-	/* Communications-related events */
-	LM_EVENT_CONN_CONNECTED  = 0x01,  /*!< Connection established successfully           */
-	LM_EVENT_CONN_DISCONNECT = 0x02,  /*!< Graceful remote disconnect. No more events will
-	                                   *   arrive after this unless the user requests
-	                                   *   connection re-establishment                   */
-	LM_EVENT_CONN_ERROR      = 0x03,  /*!< Communications error.  No more events will
-	                                   *   arrive after this unless the user requests
-	                                   *   connection re-establishment                   */
-	/* Transaction-related events */
-	LM_EVENT_TRANS_DONE      = 0x10,  /*!< Transaction Complete                          */
-	LM_EVENT_TRANS_ERROR     = 0x11,  /*!< Transaction Error (e.g. comms failed).        *
-	                                   *    Guaranteed to receive a LM_EVENT_CONN_ERROR  *
-	                                   *    after all transactions are notified          */
-	LM_EVENT_TRANS_NOCONNECT = 0x12,  /*!< Notification that the transaction is still
-	                                   *   ready to be sent, but there was an attempt to
-	                                   *   connect that failed.  This transaction is still
-	                                   *   eligible to be sent if/when a successful connection
-	                                   *   is established.  Integrators may wish to use this
-	                                   *   event to destroy the transaction object if they
-	                                   *   consider this a critical failure.             */
-	LM_EVENT_TRANS_TIMEOUT   = 0x13   /*!< Notification that the user-specified transaction
-	                                   *   timeout has elapsed.  The user may choose to
-	                                   *   ignore this and continue waiting for a final
-	                                   *   event, or clean up the transaction. */
+    /* Communications-related events */
+    LM_EVENT_CONN_CONNECTED  = 0x01,  /*!< Connection established successfully           */
+    LM_EVENT_CONN_DISCONNECT = 0x02,  /*!< Graceful remote disconnect. No more events will
+                                       *   arrive after this unless the user requests
+                                       *   connection re-establishment                   */
+    LM_EVENT_CONN_ERROR      = 0x03,  /*!< Communications error.  No more events will
+                                       *   arrive after this unless the user requests
+                                       *   connection re-establishment                   */
+    /* Transaction-related events */
+    LM_EVENT_TRANS_DONE      = 0x10,  /*!< Transaction Complete                          */
+    LM_EVENT_TRANS_ERROR     = 0x11,  /*!< Transaction Error (e.g. comms failed).        *
+                                       *    Guaranteed to receive a LM_EVENT_CONN_ERROR  *
+                                       *    after all transactions are notified          */
+    LM_EVENT_TRANS_NOCONNECT = 0x12,  /*!< Notification that the transaction is still
+                                       *   ready to be sent, but there was an attempt to
+                                       *   connect that failed.  This transaction is still
+                                       *   eligible to be sent if/when a successful connection
+                                       *   is established.  Integrators may wish to use this
+                                       *   event to destroy the transaction object if they
+                                       *   consider this a critical failure.             */
+    LM_EVENT_TRANS_TIMEOUT   = 0x13   /*!< Notification that the user-specified transaction
+                                       *   timeout has elapsed.  The user may choose to
+                                       *   ignore this and continue waiting for a final
+                                       *   event, or clean up the transaction. */
 };
 typedef enum LM_event_type LM_event_type_t;
 
 
 /*! Method used to establish a connection and communicate with the remote server */
 enum LM_mode {
-	LM_MODE_TLS = 0, /*!< Default. SSL/TLS mode */
-	LM_MODE_IP  = 1, /*!< Unencrypted IP mode */
-	/* Future? XML? */
+    LM_MODE_TLS = 0, /*!< Default. SSL/TLS mode */
+    LM_MODE_IP  = 1, /*!< Unencrypted IP mode */
+    /* Future? XML? */
 };
 typedef enum LM_mode LM_mode_t;
 
 
 /*! States indicating the current connection status */
 enum LM_conn_status {
-	LM_CONN_STATUS_CONNECTING    = 1, /*!< In the process of connecting */
-	LM_CONN_STATUS_CONNECTED     = 2, /*!< Actively connected */
-	LM_CONN_STATUS_DISCONNECTING = 3, /*!< In the process of disconnecting */
-	LM_CONN_STATUS_IDLE_TIMEOUT  = 4, /*!< In the process of disconnecting due to idle timeout */
-	LM_CONN_STATUS_DISCONNECTED  = 5  /*!< Connection failed or not yet attempted */
+    LM_CONN_STATUS_CONNECTING    = 1, /*!< In the process of connecting */
+    LM_CONN_STATUS_CONNECTED     = 2, /*!< Actively connected */
+    LM_CONN_STATUS_DISCONNECTING = 3, /*!< In the process of disconnecting */
+    LM_CONN_STATUS_IDLE_TIMEOUT  = 4, /*!< In the process of disconnecting due to idle timeout */
+    LM_CONN_STATUS_DISCONNECTED  = 5  /*!< Connection failed or not yet attempted */
 };
 typedef enum LM_conn_status LM_conn_status_t;
 
@@ -203,20 +203,20 @@ typedef struct LM_trans LM_trans_t;
 
 /*! States indicating the current condition of a transaction */
 enum LM_trans_status {
-	LM_TRANS_STATUS_ALL     = 1, /*!< All transactions (only relevant for count)           */
-	LM_TRANS_STATUS_NEW     = 2, /*!< Transaction not yet sent (being structured)          */
-	LM_TRANS_STATUS_READY   = 3, /*!< Transaction in ready state (means not connected yet) */
-	LM_TRANS_STATUS_PENDING = 4, /*!< Transaction waiting on response                      */
-	LM_TRANS_STATUS_DONE    = 5  /*!< Transaction Finished                                 */
+    LM_TRANS_STATUS_ALL     = 1, /*!< All transactions (only relevant for count)           */
+    LM_TRANS_STATUS_NEW     = 2, /*!< Transaction not yet sent (being structured)          */
+    LM_TRANS_STATUS_READY   = 3, /*!< Transaction in ready state (means not connected yet) */
+    LM_TRANS_STATUS_PENDING = 4, /*!< Transaction waiting on response                      */
+    LM_TRANS_STATUS_DONE    = 5  /*!< Transaction Finished                                 */
 };
 typedef enum LM_trans_status LM_trans_status_t;
 
 /*! Possible response types as returned by LM_trans_response_type() */
 enum LM_trans_response_type {
-	LM_TRANS_RESPONSE_UNKNOWN = 0, /*!< Unknown response type (e.g. response not back yet) */
-	LM_TRANS_RESPONSE_KV      = 1, /*!< Response is key/value pairs                        */
-	LM_TRANS_RESPONSE_CSV     = 2, /*!< Response is CSV data                               */
-	LM_TRANS_RESPONSE_BULK    = 3  /*!< Other bulk data format                             */
+    LM_TRANS_RESPONSE_UNKNOWN = 0, /*!< Unknown response type (e.g. response not back yet) */
+    LM_TRANS_RESPONSE_KV      = 1, /*!< Response is key/value pairs                        */
+    LM_TRANS_RESPONSE_CSV     = 2, /*!< Response is CSV data                               */
+    LM_TRANS_RESPONSE_BULK    = 3  /*!< Other bulk data format                             */
 };
 typedef enum LM_trans_response_type LM_trans_response_type_t;
 

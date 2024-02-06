@@ -4,29 +4,29 @@
 
 void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
 {
-	/* STX */
-	M_buf_add_byte(conn->outbuf, 0x02);
+    /* STX */
+    M_buf_add_byte(conn->outbuf, 0x02);
 
-	/* Message ID */
-	M_buf_add_uint(conn->outbuf, trans->trans_id);
+    /* Message ID */
+    M_buf_add_uint(conn->outbuf, trans->trans_id);
 
-	/* FS */
-	M_buf_add_byte(conn->outbuf, 0x1C);
+    /* FS */
+    M_buf_add_byte(conn->outbuf, 0x1C);
 
-	/* Data */
-	if (M_hash_dict_num_keys(trans->request_params) == 1 && M_str_caseeq(M_hash_dict_get_direct(trans->request_params, "action"), "ping")) {
-		/* Rewrite for proper ping message format */
-		M_buf_add_str(conn->outbuf, "PING");
-	} else {
-		M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '\n', '=', '"', '"', M_HASH_DICT_SER_FLAG_QUOTE_NON_ANS);
-	}
-	/* Clear dictionary for security purposes, may contain passwords or sensitive
-	 * account information */
-	M_hash_dict_destroy(trans->request_params);
-	trans->request_params = NULL;
+    /* Data */
+    if (M_hash_dict_num_keys(trans->request_params) == 1 && M_str_caseeq(M_hash_dict_get_direct(trans->request_params, "action"), "ping")) {
+        /* Rewrite for proper ping message format */
+        M_buf_add_str(conn->outbuf, "PING");
+    } else {
+        M_hash_dict_serialize_buf(trans->request_params, conn->outbuf, '\n', '=', '"', '"', M_HASH_DICT_SER_FLAG_QUOTE_NON_ANS);
+    }
+    /* Clear dictionary for security purposes, may contain passwords or sensitive
+     * account information */
+    M_hash_dict_destroy(trans->request_params);
+    trans->request_params = NULL;
 
-	/* ETX */
-	M_buf_add_byte(conn->outbuf, 0x03);
+    /* ETX */
+    M_buf_add_byte(conn->outbuf, 0x03);
 }
 
 
@@ -38,46 +38,46 @@ void LM_trans_structure(LM_conn_t *conn, LM_trans_t *trans)
  */
 void LM_trans_send_messages(LM_conn_t *conn)
 {
-	LM_trans_t *trans;
-	M_bool      orig_outbuf_empty = M_FALSE;
+    LM_trans_t *trans;
+    M_bool      orig_outbuf_empty = M_FALSE;
 
-	/* If disconnected, implicitly start a connection.  When a connected signal
-	 * comes in that the connection is established, will re-run this function */
-	if (conn->status == LM_CONN_STATUS_DISCONNECTED) {
-		M_thread_mutex_unlock(conn->lock);
-		LM_conn_connect(conn);
-		M_thread_mutex_lock(conn->lock);
-		return;
-	}
+    /* If disconnected, implicitly start a connection.  When a connected signal
+     * comes in that the connection is established, will re-run this function */
+    if (conn->status == LM_CONN_STATUS_DISCONNECTED) {
+        M_thread_mutex_unlock(conn->lock);
+        LM_conn_connect(conn);
+        M_thread_mutex_lock(conn->lock);
+        return;
+    }
 
-	if (conn->status != LM_CONN_STATUS_CONNECTED)
-		return;
+    if (conn->status != LM_CONN_STATUS_CONNECTED)
+        return;
 
-	if (!M_buf_len(conn->outbuf))
-		orig_outbuf_empty = M_TRUE;
+    if (!M_buf_len(conn->outbuf))
+        orig_outbuf_empty = M_TRUE;
 
-	while ((trans = M_queue_take_first(conn->trans_ready)) != NULL) {
-		M_thread_mutex_lock(trans->lock);
-		trans->status = LM_TRANS_STATUS_PENDING;
-		LM_trans_structure(conn, trans);
-		if (trans->timeout_s) {
-			/* Start timer to notify of idle timeout */
-			trans->timeout_timer = M_event_timer_oneshot(M_io_get_event(conn->io) , trans->timeout_s * 1000, M_FALSE, LM_trans_event_handler, trans);
-		}
-		M_thread_mutex_unlock(trans->lock);
-		M_queue_insert(conn->trans_pending, trans);
-	}
+    while ((trans = M_queue_take_first(conn->trans_ready)) != NULL) {
+        M_thread_mutex_lock(trans->lock);
+        trans->status = LM_TRANS_STATUS_PENDING;
+        LM_trans_structure(conn, trans);
+        if (trans->timeout_s) {
+            /* Start timer to notify of idle timeout */
+            trans->timeout_timer = M_event_timer_oneshot(M_io_get_event(conn->io) , trans->timeout_s * 1000, M_FALSE, LM_trans_event_handler, trans);
+        }
+        M_thread_mutex_unlock(trans->lock);
+        M_queue_insert(conn->trans_pending, trans);
+    }
 
-	/* Make sure the idle timer is not running if we have pending transactions */
-	if (M_queue_len(conn->trans_pending))
-		M_event_timer_stop(conn->timer);
+    /* Make sure the idle timer is not running if we have pending transactions */
+    if (M_queue_len(conn->trans_pending))
+        M_event_timer_stop(conn->timer);
 
-	/* If outbuf was empty on entry, request a fake write event to put this on the
-	 * wire as we probably won't get one otherwise.
-	 * NOTE: We don't actually want to write here, because someone may be
-	 *       enqueuing thousands of transactions, and we don't want to incur
-	 *       both the SSL/TLS packet overhead of shorter-than-max packets, nor
-	 *       the syscall overhead of the send() */
-	if (orig_outbuf_empty && M_buf_len(conn->outbuf))
-		M_event_trigger_signal(conn->write_trigger);
+    /* If outbuf was empty on entry, request a fake write event to put this on the
+     * wire as we probably won't get one otherwise.
+     * NOTE: We don't actually want to write here, because someone may be
+     *       enqueuing thousands of transactions, and we don't want to incur
+     *       both the SSL/TLS packet overhead of shorter-than-max packets, nor
+     *       the syscall overhead of the send() */
+    if (orig_outbuf_empty && M_buf_len(conn->outbuf))
+        M_event_trigger_signal(conn->write_trigger);
 }
