@@ -35,10 +35,10 @@ struct _M_CONN;
 typedef struct _M_CONN * M_CONN;
 
 enum m_ssllock_style {
-	M_SSLLOCK_NONE = 0,     /*!< No locking method defined. Should not be set by a user. */
-	M_SSLLOCK_EXTERNAL = 1, /*!< User is responsible for initializing OpenSSL and its locks. */
-	M_SSLLOCK_INTERNAL = 2  /*!< libmonetra is responsible for all OpenSSL code. OpenSSL should
-	                         *   not be used outside of libmonetra calls. */
+    M_SSLLOCK_NONE = 0,     /*!< No locking method defined. Should not be set by a user. */
+    M_SSLLOCK_EXTERNAL = 1, /*!< User is responsible for initializing OpenSSL and its locks. */
+    M_SSLLOCK_INTERNAL = 2  /*!< libmonetra is responsible for all OpenSSL code. OpenSSL should
+                             *   not be used outside of libmonetra calls. */
 };
 
 /* ---------------------------------------- */
@@ -185,7 +185,7 @@ LM_EXPORT int LM_SPEC M_SetSSL_CAfile(M_CONN *conn, const char *path);
  * If both dir and file are set only dir will be used.
  *
  * \param[in,out] conn #M_CONN passed by reference, or allocated #M_CONN pointer
- * \param[in] path path of CA directory. 
+ * \param[in] path path of CA directory.
  * \return 1 on success, 0 on failure
  *
  * \see M_SetSSL_CAfile

@@ -1,4 +1,4 @@
-/* This is the libmonetra legacy header.  It should not be included by modern 
+/* This is the libmonetra legacy header.  It should not be included by modern
  * programs.  Use "monetra_api.h" instead */
 #ifndef __MONETRA_H__
 #define __MONETRA_H__

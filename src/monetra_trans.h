@@ -4,22 +4,22 @@
 #include "monetra_api.h"
 
 struct LM_trans {
-	M_thread_mutex_t         *lock;            /*!< Protect concurrent access */
+    M_thread_mutex_t         *lock;            /*!< Protect concurrent access */
 
-	LM_conn_t                *conn;            /*!< Pointer to parent connection */
-	M_uint64                  trans_id;        /*!< Unique transaction id for connection */
-	LM_trans_status_t         status;          /*!< Current status of transaction */
+    LM_conn_t                *conn;            /*!< Pointer to parent connection */
+    M_uint64                  trans_id;        /*!< Unique transaction id for connection */
+    LM_trans_status_t         status;          /*!< Current status of transaction */
 
-	M_hash_dict_t            *request_params;  /*!< Dictionary of request parameters */
-	LM_trans_response_type_t  response_type;   /*!< Type of response (if status == LM_TRANS_STATUS_DONE) */
-	M_hash_dict_t            *response_params; /*!< Dictionary of response parameters (if response_type==LM_TRANS_RESPONSE_KV) */
-	char                     *response_raw;    /*!< Raw response data if not key/value pair */
-	M_csv_t                  *response_csv;    /*!< Parsed CSV response data */
+    M_hash_dict_t            *request_params;  /*!< Dictionary of request parameters */
+    LM_trans_response_type_t  response_type;   /*!< Type of response (if status == LM_TRANS_STATUS_DONE) */
+    M_hash_dict_t            *response_params; /*!< Dictionary of response parameters (if response_type==LM_TRANS_RESPONSE_KV) */
+    char                     *response_raw;    /*!< Raw response data if not key/value pair */
+    M_csv_t                  *response_csv;    /*!< Parsed CSV response data */
 
-	M_uint64                  timeout_s;       /*!< Seconds to wait until LM_EVENT_TRANS_TIMEOUT is emitted */
-	M_event_timer_t          *timeout_timer;   /*!< Timer tracking timeout */
+    M_uint64                  timeout_s;       /*!< Seconds to wait until LM_EVENT_TRANS_TIMEOUT is emitted */
+    M_event_timer_t          *timeout_timer;   /*!< Timer tracking timeout */
 
-	void                     *user_data;       /*!< User specified data, custom tracking parameter */
+    void                     *user_data;       /*!< User specified data, custom tracking parameter */
 };
 
 /* Free the transaction only, don't try to de-register it (used in destructors) */
